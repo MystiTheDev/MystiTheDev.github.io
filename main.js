@@ -89,7 +89,7 @@ function onScroll() {
     copy.style.transform = `translateY(${-lift * 140}px)`;
     copy.style.opacity = String(1 - lift);
     const rise = ease(clamp(t / 0.6));
-    stage.style.setProperty("--win-y", `${70 - rise * 64}%`);
+    stage.style.setProperty("--win-off", `${(1 - rise) * innerHeight * 0.62}px`);
     stage.style.setProperty("--win-s", String(0.92 + rise * 0.08));
     // Once the window has settled, labels pop in one by one, then leave together before the handoff.
     const out = clamp((t - 0.93) / 0.05);

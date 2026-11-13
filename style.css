@@ -267,3 +267,6 @@ details[open] summary::after { transform: rotate(-135deg) translateY(-3px); }
 .callout[data-side="left"]::before { right: -28px; }
 .callout[data-side="left"]::after { right: -16px; }
 @media (max-width: 900px) { .dive { height: 200vh; } .dive-callouts { display: none; } }
+/* Window rises from below and comes to rest centered under the nav (offset set from scroll). */
+.dive-window, .dive-callouts { top: calc(50% + 34px); bottom: auto; width: min(1120px, 88vw, calc((100vh - 170px) * 16 / 9)); translate: -50% calc(-50% + var(--win-off, 60vh)); }
+.dive-stage::after { height: 22vh; }
