@@ -89,7 +89,7 @@ main > section { position: relative; padding: 140px clamp(20px, 5vw, 72px) 120px
 .rise .frame { transform-origin: 50% 0; rotate: x 28deg; scale: .88; max-width: 1100px; margin-inline: auto; }
 
 /* Showcase: tall section, sticky stage */
-.showcase { height: 380vh; padding-top: 0; padding-bottom: 0; }
+.showcase { height: 300vh; padding-top: 0; padding-bottom: 0; }
 .stage { position: sticky; top: 0; height: 100vh; display: grid; grid-template-columns: minmax(240px, .8fr) 1.9fr; gap: clamp(24px, 4vw, 64px); align-items: center; }
 .captions { position: relative; height: 16rem; }
 .cap { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
@@ -232,3 +232,31 @@ details[open] summary::after { rotate: 45deg; }
 .tabs button:hover { color: var(--ink); border-color: rgba(142, 230, 220, .5); }
 .tabs button[aria-selected="true"] { color: var(--abyss); background: var(--sunlit); border-color: var(--sunlit); }
 .tabs button i { position: absolute; left: 14px; right: 14px; bottom: 4px; height: 2px; border-radius: 2px; background: currentColor; opacity: .5; scale: var(--f, 0) 1; transform-origin: left; }
+
+/* Showcase v3: Apple-style zoom-through, one big centered window */
+@media (min-width: 901px) {
+  .stage { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding-top: 64px; box-sizing: border-box; }
+  .screens { order: 1; width: min(1180px, 84vw, calc((100vh - 330px) * 16 / 9)); perspective: none; }
+  .captions { order: 2; width: min(1180px, 84vw, calc((100vh - 330px) * 16 / 9)); height: 4.6rem; }
+  .cap { display: flex; align-items: baseline; gap: 22px; }
+  .cap h2 { font-size: clamp(1.8rem, 2.6vw, 2.4rem); margin: 0; flex: none; }
+  .cap p { margin: 0; max-width: 40rem; }
+  .tabs { margin-top: 16px; }
+}
+.big .shots img { transition: none; }
+.callout { left: 50% !important; top: auto !important; bottom: 18px; translate: -50% 0; transform: none; }
+.callout .dot { display: none; }
+.callout .note { position: static; display: inline-block; padding: 9px 18px; font-size: 1rem; box-shadow: 0 10px 30px -8px rgba(0, 0, 0, .7); }
+/* Subtle ocean: slow caustic light drifting over the window */
+.big .shots::after { content: ""; position: absolute; inset: -20%; z-index: 4; pointer-events: none; opacity: .5; mix-blend-mode: screen;
+  background: radial-gradient(30% 20% at 20% 30%, rgba(142, 230, 220, .10), transparent 70%), radial-gradient(25% 18% at 70% 60%, rgba(142, 230, 220, .08), transparent 70%), radial-gradient(20% 14% at 45% 85%, rgba(167, 139, 250, .07), transparent 70%);
+  animation: caustic 14s ease-in-out infinite alternate; }
+@keyframes caustic { to { transform: translate(6%, -4%) rotate(4deg); } }
+@media (prefers-reduced-motion: reduce) { .big .shots::after { animation: none; } }
+/* .big is also the large-paragraph class; undo its text styles on the showcase frame */
+.frame.big { max-width: none; font-size: 1rem; }
+
+/* Top bar turns into a floating rounded pill once you scroll */
+.bar { transition: top .45s cubic-bezier(.2, .8, .2, 1), left .45s cubic-bezier(.2, .8, .2, 1), right .45s cubic-bezier(.2, .8, .2, 1), border-radius .45s, padding .45s, background .4s, border-color .4s, box-shadow .4s; border: 1px solid transparent; }
+.bar.solid { top: 12px; left: max(16px, calc(50% - 600px)); right: max(16px, calc(50% - 600px)); padding: 9px 12px 9px 22px; border-radius: 999px; border-color: rgba(142, 230, 220, .22); background: rgba(1, 8, 16, .6); box-shadow: 0 12px 40px -12px rgba(0, 0, 0, .7); }
+@media (prefers-reduced-motion: reduce) { .bar { transition: none; } }

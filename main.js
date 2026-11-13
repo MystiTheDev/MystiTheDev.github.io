@@ -69,7 +69,7 @@ const GLOW2 = [[0, [14, 116, 144, .3]], [0.5, [59, 130, 246, .2]], [1, [124, 58,
 const sea = $(".sea"), glow = $(".glow"), rays = $(".rays"), rope = $(".line-rope"), weight = $(".line-weight"), depth = $("#depth"), bar = $(".bar");
 const riseFrame = $(".rise .frame"), jelly = $(".jelly"), orbWrap = $(".orb-wrap"), angler = $(".angler");
 const showcase = $(".showcase"), shots = $$(".big .shots img"), caps = $$(".cap"), tabs = $$(".tabs button"), bigFrame = $(".big");
-const callout = $(".callout"), note = $(".callout .note"), washMap = $("#wash-map");
+const callout = $(".callout"), note = $(".callout .note");
 const scrubs = $$("[data-scrub]");
 const bubbles = [], snow = [];
 
@@ -108,42 +108,32 @@ function frame() {
     const seg = sp * shots.length - 0.0001;
     const idx = Math.max(0, Math.floor(seg)), local = seg - idx;
     const last = idx === shots.length - 1;
-    // Scene timeline: settle, zoom into a detail with a callout, zoom out, then the water transition.
-    const tr = last ? 0 : ease(clamp((local - 0.72) / 0.28));
-    const zin = ease(clamp((local - 0.12) / 0.28)), zout = last ? 0 : ease(clamp((local - 0.5) / 0.2));
-    const zk = zin * (1 - zout);
-    const cur = shots[idx], z = 1 + (+cur.dataset.z - 1) * zk;
+    // Scene timeline (Apple-style zoom-through): show the full view, glide the camera into one
+    // detail, hold, glide back out, then fade to the next view.
+    const k = ease(clamp((local - 0.08) / 0.32)) * (last ? 1 : 1 - ease(clamp((local - 0.62) / 0.2)));
+    const fade = last ? 0 : ease(clamp((local - 0.82) / 0.18));
     shots.forEach((img, i) => {
-      img.style.transformOrigin = `${img.dataset.fx}% ${img.dataset.fy}%`;
-      img.style.filter = "";
       if (i === idx) {
-        img.style.opacity = 1; img.style.zIndex = 1; img.style.clipPath = "none";
-        img.style.scale = String(z * (1 + 0.05 * tr));
-      } else if (i === idx + 1 && tr > 0) {
-        // Next view rises from the bottom like water filling the frame, edge rippling.
-        img.style.opacity = 1; img.style.zIndex = 2; img.style.scale = "1";
-        img.style.clipPath = `inset(${(1 - tr) * 100}% 0 0 0)`;
-        img.style.filter = "url(#wash)";
+        // Origin at top-left: scale by Z and slide so the focus point lands in the middle of the frame.
+        const Z = +img.dataset.z, fx = img.dataset.fx / 100, fy = img.dataset.fy / 100;
+        const tx = clamp(0.5 - fx * Z, 1 - Z, 0), ty = clamp(0.5 - fy * Z, 1 - Z, 0);
+        img.style.transformOrigin = "0 0";
+        img.style.transform = `translate(${tx * k * 100}%, ${ty * k * 100}%) scale(${1 + (Z - 1) * k})`;
+        img.style.opacity = 1; img.style.zIndex = 1;
+      } else if (i === idx + 1) {
+        img.style.transform = `scale(${1.04 - 0.04 * fade})`;
+        img.style.opacity = fade; img.style.zIndex = 2;
       } else { img.style.opacity = 0; img.style.zIndex = 0; }
     });
-    washMap.setAttribute("scale", String(Math.sin(tr * Math.PI) * 45));
-    callout.style.left = cur.dataset.fx + "%";
-    callout.style.top = cur.dataset.fy + "%";
-    note.textContent = cur.dataset.note;
-    const co = clamp((local - 0.28) / 0.08) * (1 - clamp((local - 0.58) / 0.08));
-    callout.style.opacity = co;
-    callout.style.scale = String(0.8 + 0.2 * co);
+    const capIdx = fade > 0.5 ? idx + 1 : idx;
     caps.forEach((c, i) => {
-      let o = 0, ty = 30;
-      // Outgoing caption leaves in the first half of the transition, incoming arrives in the second.
-      if (i === idx) { o = 1 - clamp(tr * 2); ty = -30 * clamp(tr * 2); }
-      else if (i === idx + 1) { o = clamp(tr * 2 - 1); ty = 30 * (1 - clamp(tr * 2 - 1)); }
-      c.style.opacity = o; c.style.translate = `0 ${ty}px`;
-      c.classList.toggle("on", o > 0.5);
+      const o = i !== capIdx ? 0 : fade > 0 ? Math.abs(fade - 0.5) * 2 : 1;
+      c.style.opacity = o; c.style.translate = `0 ${(1 - o) * 12}px`;
+      c.classList.toggle("on", i === capIdx);
     });
-    tabs.forEach((t, i) => { t.style.setProperty("--f", clamp(seg - i)); t.setAttribute("aria-selected", String(i === idx)); });
-    // The frame turns slightly as scenes change, like a slow camera move.
-    bigFrame.style.transform = `rotateY(${-8 + sp * 16}deg) rotateX(${4 - Math.sin(local * Math.PI) * 3}deg)`;
+    note.textContent = shots[idx].dataset.note;
+    callout.style.opacity = clamp((k - 0.6) / 0.3);
+    tabs.forEach((t, i) => { t.style.setProperty("--f", clamp(seg - i)); t.setAttribute("aria-selected", String(i === capIdx)); });
   }
 
   // Scroll-scrubbed text: tied to position, not a one-off fade.
