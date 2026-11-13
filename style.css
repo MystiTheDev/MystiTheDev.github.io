@@ -300,3 +300,8 @@ details[open] summary::after { transform: rotate(-135deg) translateY(-3px); }
   .tag b { font-size: 12.5px; line-height: 1.25; }
   .tag span { font-size: 11.5px; }
 }
+/* Atlas teaser: a pre-blurred low-res image as a background, so the full screenshot is never sent. */
+.teaser { background: #0c1218 url("assets/atlas-teaser.jpg") center / cover no-repeat; }
+.teaser img { display: none; }
+.teaser::after { background: linear-gradient(transparent 45%, var(--surface)); }
+@media (prefers-color-scheme: dark) { .teaser { filter: brightness(1.25); } }
