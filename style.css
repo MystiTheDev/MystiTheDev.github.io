@@ -97,7 +97,7 @@ main > section { position: relative; padding: 140px clamp(20px, 5vw, 72px) 120px
 .cap h2 { font-size: clamp(2.6rem, 5vw, 4.2rem); }
 .cap p { font-size: 1.15rem; color: var(--soft); max-width: 26rem; margin: 0; }
 .screens { position: relative; perspective: 1800px; }
-.big .shots { position: relative; aspect-ratio: 16 / 10; }
+.big .shots { position: relative; aspect-ratio: 16 / 9; }
 .big .shots img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top left; opacity: 0; }
 .big .shots img:first-child { opacity: 1; }
 .rail { display: flex; gap: 8px; justify-content: center; margin-top: 22px; }
