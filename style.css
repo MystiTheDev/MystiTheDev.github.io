@@ -76,7 +76,7 @@ code { font: 500 .88em var(--mono); background: var(--soft); border: 1px solid v
 .window-bar i { width: 11px; height: 11px; border-radius: 50%; background: #3a3a3a; }
 
 /* ---------- Hero dive ---------- */
-.dive { position: relative; height: 240vh; }
+.dive { position: relative; height: 300vh; }
 .dive-stage { position: sticky; top: 0; height: 100vh; overflow: hidden; display: grid; place-items: center; }
 .water { position: absolute; inset: 0; background: var(--water, #1B7FA8); }
 .water-light { position: absolute; inset: 0; background: radial-gradient(120% 60% at 50% -10%, rgba(255, 255, 255, .22), transparent 60%); opacity: var(--surface-light, 1); }
@@ -254,3 +254,16 @@ details[open] summary::after { transform: rotate(-135deg) translateY(-3px); }
 .nav.on-water nav a { opacity: 1; }
 .nav.on-water .btn { background: #fff; color: #062236; }
 @media (prefers-reduced-motion: reduce) { .caustics i { animation: none; } .bubbles { display: none; } }
+
+/* ---------- Hero callouts: labels that appear around the resting app window ---------- */
+.dive-window, .dive-callouts { left: 50%; bottom: 0; width: min(1120px, 88vw); translate: -50% var(--win-y, 70%); scale: var(--win-s, .92); }
+.dive-callouts { position: absolute; z-index: 4; aspect-ratio: 16 / 9; pointer-events: none; }
+.callout { position: absolute; white-space: nowrap; padding: 8px 14px; border-radius: 999px; background: #fff; color: #062236; font-size: 14px; font-weight: 500; box-shadow: 0 10px 30px -8px rgba(0, 0, 0, .55); opacity: 0; translate: 22px -50%; }
+.callout[data-side="left"] { translate: calc(-100% - 22px) -50%; }
+.callout::before { content: ""; position: absolute; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: #38C6E8; box-shadow: 0 0 0 4px rgba(56, 198, 232, .3); }
+.callout::after { content: ""; position: absolute; top: 50%; height: 1px; width: 12px; background: rgba(255, 255, 255, .8); }
+.callout[data-side="right"]::before { left: -28px; }
+.callout[data-side="right"]::after { left: -16px; }
+.callout[data-side="left"]::before { right: -28px; }
+.callout[data-side="left"]::after { right: -16px; }
+@media (max-width: 900px) { .dive { height: 200vh; } .dive-callouts { display: none; } }

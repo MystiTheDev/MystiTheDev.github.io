@@ -66,6 +66,7 @@ const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">"
 
 /* ---------- Hero dive: scroll takes the camera from the sunlit surface into deep water ---------- */
 const WATER = [[0, [27, 127, 168]], [0.35, [16, 92, 135]], [0.7, [11, 62, 98]], [1, [6, 26, 46]]];
+const callouts = $$(".callout");
 const dive = $(".dive"), stage = $(".dive-stage"), copy = $(".dive-copy"), win = $(".dive-window"), nav = $("#nav");
 const motes = $(".motes"), moteList = [];
 for (let i = 0; i < (reduce ? 0 : 36); i++) {
@@ -87,9 +88,16 @@ function onScroll() {
     const lift = ease(clamp((t - 0.2) / 0.45));
     copy.style.transform = `translateY(${-lift * 140}px)`;
     copy.style.opacity = String(1 - lift);
-    const rise = ease(clamp(t / 0.75));
-    win.style.setProperty("--win-y", `${70 - rise * 64}%`);
-    win.style.setProperty("--win-s", String(0.92 + rise * 0.08));
+    const rise = ease(clamp(t / 0.6));
+    stage.style.setProperty("--win-y", `${70 - rise * 64}%`);
+    stage.style.setProperty("--win-s", String(0.92 + rise * 0.08));
+    // Once the window has settled, labels pop in one by one, then leave together before the handoff.
+    const out = clamp((t - 0.93) / 0.05);
+    callouts.forEach((c, i) => {
+      const k = ease(clamp((t - (0.63 + i * 0.07)) / 0.05)) * (1 - out);
+      c.style.opacity = String(k);
+      c.style.scale = String(0.85 + k * 0.15);
+    });
     // Motes rise past the camera at different speeds, which reads as moving down through the water.
     moteList.forEach((m) => (m.style.translate = `0 ${-t * 600 * m.dataset.k}px`));
   }
