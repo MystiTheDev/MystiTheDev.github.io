@@ -65,7 +65,7 @@ const mixHex = (stops, t) => {
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 /* ---------- Hero dive: scroll takes the camera from the sunlit surface into deep water ---------- */
-const WATER = [[0, [108, 201, 223]], [0.35, [30, 127, 168]], [0.7, [11, 62, 98]], [1, [6, 26, 46]]];
+const WATER = [[0, [27, 127, 168]], [0.35, [16, 92, 135]], [0.7, [11, 62, 98]], [1, [6, 26, 46]]];
 const dive = $(".dive"), stage = $(".dive-stage"), copy = $(".dive-copy"), win = $(".dive-window"), nav = $("#nav");
 const motes = $(".motes"), moteList = [];
 for (let i = 0; i < (reduce ? 0 : 36); i++) {
@@ -91,7 +91,7 @@ function onScroll() {
     win.style.setProperty("--win-y", `${70 - rise * 64}%`);
     win.style.setProperty("--win-s", String(0.92 + rise * 0.08));
     // Motes rise past the camera at different speeds, which reads as moving down through the water.
-    moteList.forEach((m) => (m.style.transform = `translateY(${-t * 600 * m.dataset.k}px)`));
+    moteList.forEach((m) => (m.style.translate = `0 ${-t * 600 * m.dataset.k}px`));
   }
   nav.classList.toggle("scrolled", scrollY > 24);
   nav.classList.toggle("on-water", scrollY <= 24);
@@ -214,7 +214,23 @@ $$("details").forEach((d) => {
 /* ---------- Ambient: drifting motes and the Nerida orb ---------- */
 if (!reduce) {
   moteList.forEach((m) => animate(m, { x: [0, utils.random(-24, 24)], duration: utils.random(4000, 9000), loop: true, alternate: true, ease: "inOutSine" }));
-  animate(".rays i", { opacity: [0.45, 1], delay: stagger(500), duration: 3400, loop: true, alternate: true, ease: "inOutSine" });
+  // Rays sway and shimmer like sunlight through moving waves (each on its own rhythm).
+  $$(".rays i").forEach((r) => animate(r, {
+    x: [utils.random(-30, -10), utils.random(10, 30)], skewX: [utils.random(-6, -2), utils.random(2, 6)], opacity: [0.35, 1],
+    duration: utils.random(3800, 6500), delay: utils.random(0, 2000), loop: true, alternate: true, ease: "inOutSine",
+  }));
+  // Bubbles rise from the bottom of the scene, each with its own size, speed and wobble.
+  const bubbleBox = $(".bubbles");
+  for (let i = 0; i < 14; i++) {
+    const b = document.createElement("span"), s = utils.random(6, 18);
+    Object.assign(b.style, { width: s + "px", height: s + "px", left: utils.random(4, 96) + "%" });
+    bubbleBox.appendChild(b);
+    const rise = () => animate(b, {
+      y: [0, -(innerHeight + 80)], x: [0, utils.random(-40, 40)], opacity: [0, 0.9, 0.9, 0],
+      duration: utils.random(7000, 13000), delay: utils.random(0, 6000), ease: "inSine", onComplete: rise,
+    });
+    rise();
+  }
   animate("#orb .o-halo", { scale: [1, 1.12], opacity: [0.8, 1], duration: 1800, loop: true, alternate: true, ease: "inOutSine" });
   animate("#orb .o-ring", { scale: [1, 1.5], opacity: [0.9, 0], duration: 1800, loop: true, ease: "outQuad" });
   animate("#orb .o-core", { scale: [0.85, 1.15], duration: 1400, loop: true, alternate: true, ease: "inOutSine" });
