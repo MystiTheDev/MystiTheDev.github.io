@@ -66,7 +66,27 @@ const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">"
 
 /* ---------- Hero dive: scroll takes the camera from the sunlit surface into deep water ---------- */
 const WATER = [[0, [27, 127, 168]], [0.35, [16, 92, 135]], [0.7, [11, 62, 98]], [1, [6, 26, 46]]];
-const callouts = $$(".callout");
+const points = $$(".hl .pt").map((g) => ({ rect: $("rect", g), line: $("line", g) }));
+// The markup gives positions in % of the screenshot. The SVG is re-drawn in real pixels so the
+// stroke stays even and the draw-on (dash) animation stays solid.
+const hl = $(".hl"), pct = points.map(({ rect, line }) => ({
+  r: ["x", "y", "width", "height"].map((a) => +rect.getAttribute(a)),
+  l: ["x1", "y1", "x2", "y2"].map((a) => +line.getAttribute(a)),
+}));
+function sizePointers() {
+  const w = hl.clientWidth, h = hl.clientHeight;
+  if (!w) return;
+  hl.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  points.forEach(({ rect, line }, i) => {
+    const [x, y, rw, rh] = pct[i].r, [x1, y1, x2, y2] = pct[i].l;
+    Object.entries({ x: x * w / 100, y: y * h / 100, width: rw * w / 100, height: rh * h / 100, rx: 8 }).forEach(([a, v]) => rect.setAttribute(a, v));
+    Object.entries({ x1: x1 * w / 100, y1: y1 * h / 100, x2: x2 * w / 100, y2: y2 * h / 100 }).forEach(([a, v]) => line.setAttribute(a, v));
+  });
+}
+sizePointers();
+addEventListener("resize", sizePointers);
+const tags = $$(".tag");
+if (reduce) { points.forEach((g) => { g.rect.style.strokeDashoffset = 0; g.line.style.strokeDashoffset = 0; }); tags.forEach((t) => (t.style.opacity = 1)); }
 const dive = $(".dive"), stage = $(".dive-stage"), copy = $(".dive-copy"), win = $(".dive-window"), nav = $("#nav");
 const motes = $(".motes"), moteList = [];
 for (let i = 0; i < (reduce ? 0 : 36); i++) {
@@ -91,12 +111,17 @@ function onScroll() {
     const rise = ease(clamp(t / 0.6));
     stage.style.setProperty("--win-off", `${(1 - rise) * innerHeight * 0.62}px`);
     stage.style.setProperty("--win-s", String(0.92 + rise * 0.08));
-    // Once the window has settled, labels pop in one by one, then leave together before the handoff.
-    const out = clamp((t - 0.93) / 0.05);
-    callouts.forEach((c, i) => {
-      const k = ease(clamp((t - (0.63 + i * 0.07)) / 0.05)) * (1 - out);
-      c.style.opacity = String(k);
-      c.style.scale = String(0.85 + k * 0.15);
+    // Once the window has settled, each pointer draws in turn: ring, then connector, then label.
+    // Tied to scroll, so it reverses when scrolling up; once drawn, pointers stay with the window.
+    points.forEach((g, i) => {
+      const k = clamp((t - (0.62 + i * 0.075)) / 0.07);
+      const ring = ease(clamp(k / 0.5)), line = ease(clamp((k - 0.45) / 0.25)), lab = ease(clamp((k - 0.65) / 0.35));
+      g.rect.style.strokeDashoffset = String(1 - ring);
+      g.rect.style.fill = `rgba(56, 198, 232, ${0.07 * ring})`;
+      g.line.style.strokeDashoffset = String(1 - line);
+      const tag = tags[i], dir = tag.classList.contains("tag-left") ? 1 : -1;
+      tag.style.opacity = String(lab);
+      tag.style.transform = `translateX(${dir * (1 - lab) * 14}px)`;
     });
     // Motes rise past the camera at different speeds, which reads as moving down through the water.
     moteList.forEach((m) => (m.style.translate = `0 ${-t * 600 * m.dataset.k}px`));
