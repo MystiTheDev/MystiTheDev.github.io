@@ -3,7 +3,7 @@ import { animate, stagger, utils } from "https://cdn.jsdelivr.net/npm/animejs@4/
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const REPO = "MystiTheDev/oceanic";
 
-/* ---------- Nerida orb (ported from NeridaOrb.tsx) ---------- */
+/* ---------- Nerida orb (ported from the app's NeridaOrb.tsx) ---------- */
 function orbSvg() {
   const C = { x: 36, y: 31 }, T = 4 * Math.PI;
   const sp = (t) => { const r = 2.25 * Math.exp(0.156 * t); return [C.x - r * Math.cos(t), C.y - r * Math.sin(t)]; };
@@ -48,336 +48,178 @@ function orbSvg() {
 document.getElementById("orb").innerHTML = orbSvg();
 
 /* ---------- Helpers ---------- */
-const $ = (s) => document.querySelector(s);
-const $$ = (s) => [...document.querySelectorAll(s)];
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
-const ease = (t) => t * t * (3 - 2 * t);
-const lerpStops = (stops, p) => {
+const ease = (t) => 1 - Math.pow(1 - t, 3);
+const mixHex = (stops, t) => {
   for (let i = 1; i < stops.length; i++) {
-    const [p1, c1] = stops[i], [p0, c0] = stops[i - 1];
-    if (p <= p1) { const t = (p - p0) / (p1 - p0); return c0.map((v, k) => +(v + (c1[k] - v) * t).toFixed(3)); }
+    const [t1, c1] = stops[i], [t0, c0] = stops[i - 1];
+    if (t <= t1) {
+      const k = (t - t0) / (t1 - t0);
+      return "rgb(" + c0.map((v, j) => Math.round(v + (c1[j] - v) * k)).join(",") + ")";
+    }
   }
-  return stops.at(-1)[1];
+  return "rgb(" + stops.at(-1)[1].join(",") + ")";
 };
-const wide = () => innerWidth > 900;
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-/* Sea color and zone glows by page depth */
-const SEA = [[0, [20, 120, 130]], [0.15, [8, 62, 88]], [0.4, [6, 28, 56]], [0.7, [3, 14, 30]], [1, [2, 9, 16]]];
-const GLOW = [[0, [45, 212, 191, .3]], [0.3, [56, 189, 248, .22]], [0.5, [124, 58, 237, .3]], [0.7, [167, 139, 250, .18]], [0.85, [45, 212, 191, .12]], [1, [205, 185, 143, .22]]];
-const GLOW2 = [[0, [14, 116, 144, .3]], [0.5, [59, 130, 246, .2]], [1, [124, 58, 237, .12]]];
-
-const sea = $(".sea"), glow = $(".glow"), rays = $(".rays"), rope = $(".line-rope"), weight = $(".line-weight"), depth = $("#depth"), bar = $(".bar");
-const riseFrame = $(".rise .frame"), jelly = $(".jelly"), orbWrap = $(".orb-wrap"), angler = $(".angler");
-const showcase = $(".showcase"), shots = $$(".big .shots img"), caps = $$(".cap"), tabs = $$(".tabs button"), bigFrame = $(".big");
-const callout = $(".callout"), note = $(".callout .note");
-const scrubs = $$("[data-scrub]");
-const bubbles = [], snow = [];
-
-function frame() {
-  const max = document.documentElement.scrollHeight - innerHeight;
-  const p = max > 0 ? clamp(scrollY / max) : 0;
-
-  sea.style.background = `rgb(${lerpStops(SEA, p).map(Math.round).join(",")})`;
-  glow.style.setProperty("--gc", `rgba(${lerpStops(GLOW, p).join(",")})`);
-  glow.style.setProperty("--gc2", `rgba(${lerpStops(GLOW2, p).join(",")})`);
-  glow.style.setProperty("--gx", `${60 + Math.sin(p * 9) * 25}%`);
-  glow.style.setProperty("--gy", `${30 + Math.cos(p * 7) * 15}%`);
-  rays.style.opacity = Math.max(0, 1 - p * 6);
-
-  const y = 72 + p * (innerHeight - 130);
-  rope.style.height = y + "px";
-  weight.style.top = y + "px";
-  depth.textContent = Math.round(p * 4000).toLocaleString();
-  bar.classList.toggle("solid", scrollY > 40);
-
-  const bOp = Math.max(0, 1 - p * 5), sOp = clamp((p - 0.25) * 2.5);
-  bubbles.forEach((b) => (b.style.opacity = bOp));
-  snow.forEach((s) => (s.style.opacity = sOp * s.dataset.o));
-
-  if (reduce) return;
-
-  // Hero: the app window rises out of the water and flattens.
-  const h = ease(clamp(scrollY / (innerHeight * 0.7)));
-  riseFrame.style.rotate = `x ${28 * (1 - h)}deg`;
-  riseFrame.style.scale = String(0.88 + 0.12 * h);
-
-  // Pinned showcase: five scenes scrubbed by scroll.
-  if (wide()) {
-    const r = showcase.getBoundingClientRect();
-    const sp = clamp(-r.top / (r.height - innerHeight));
-    const seg = sp * shots.length - 0.0001;
-    const idx = Math.max(0, Math.floor(seg)), local = seg - idx;
-    const last = idx === shots.length - 1;
-    // Scene timeline (Apple-style zoom-through): show the full view, glide the camera into one
-    // detail, hold, glide back out, then fade to the next view.
-    const k = ease(clamp((local - 0.08) / 0.32)) * (last ? 1 : 1 - ease(clamp((local - 0.62) / 0.2)));
-    const fade = last ? 0 : ease(clamp((local - 0.82) / 0.18));
-    shots.forEach((img, i) => {
-      if (i === idx) {
-        // Origin at top-left: scale by Z and slide so the focus point lands in the middle of the frame.
-        const Z = +img.dataset.z, fx = img.dataset.fx / 100, fy = img.dataset.fy / 100;
-        const tx = clamp(0.5 - fx * Z, 1 - Z, 0), ty = clamp(0.5 - fy * Z, 1 - Z, 0);
-        img.style.transformOrigin = "0 0";
-        img.style.transform = `translate(${tx * k * 100}%, ${ty * k * 100}%) scale(${1 + (Z - 1) * k})`;
-        img.style.opacity = 1; img.style.zIndex = 1;
-      } else if (i === idx + 1) {
-        img.style.transform = `scale(${1.04 - 0.04 * fade})`;
-        img.style.opacity = fade; img.style.zIndex = 2;
-      } else { img.style.opacity = 0; img.style.zIndex = 0; }
-    });
-    const capIdx = fade > 0.5 ? idx + 1 : idx;
-    caps.forEach((c, i) => {
-      const o = i !== capIdx ? 0 : fade > 0 ? Math.abs(fade - 0.5) * 2 : 1;
-      c.style.opacity = o; c.style.translate = `0 ${(1 - o) * 12}px`;
-      c.classList.toggle("on", i === capIdx);
-    });
-    note.textContent = shots[idx].dataset.note;
-    callout.style.opacity = clamp((k - 0.6) / 0.3);
-    tabs.forEach((t, i) => { t.style.setProperty("--f", clamp(seg - i)); t.setAttribute("aria-selected", String(i === capIdx)); });
-  }
-
-  // Scroll-scrubbed text: tied to position, not a one-off fade.
-  scrubs.forEach((el) => {
-    const t = ease(clamp((innerHeight - el.getBoundingClientRect().top) / (innerHeight * 0.4)));
-    el.style.opacity = t;
-    el.style.translate = `0 ${(1 - t) * 60}px`;
-    el.style.filter = t < 1 ? `blur(${(1 - t) * 6}px)` : "";
-  });
-
-  if (jelly) jelly.style.translate = `0 ${jelly.parentElement.getBoundingClientRect().top * -0.3}px`;
-  if (angler) angler.style.translate = `${angler.parentElement.getBoundingClientRect().top * 0.15}px 0`;
-  if (orbWrap) {
-    const r = orbWrap.getBoundingClientRect(), t = 1 - clamp(Math.abs(r.top + r.height / 2 - innerHeight / 2) / innerHeight);
-    orbWrap.style.scale = String(0.75 + t * 0.4);
-  }
+/* ---------- Hero dive: scroll takes the camera from the sunlit surface into deep water ---------- */
+const WATER = [[0, [108, 201, 223]], [0.35, [30, 127, 168]], [0.7, [11, 62, 98]], [1, [6, 26, 46]]];
+const dive = $(".dive"), stage = $(".dive-stage"), copy = $(".dive-copy"), win = $(".dive-window"), nav = $("#nav");
+const motes = $(".motes"), moteList = [];
+for (let i = 0; i < (reduce ? 0 : 36); i++) {
+  const m = document.createElement("span"), s = 1 + Math.random() * 3;
+  m.dataset.k = (0.3 + Math.random() * 1.2).toFixed(2);
+  Object.assign(m.style, { width: s + "px", height: s + "px", left: Math.random() * 100 + "%", top: 20 + Math.random() * 100 + "%", opacity: (0.25 + Math.random() * 0.5).toFixed(2) });
+  motes.appendChild(m);
+  moteList.push(m);
 }
-addEventListener("scroll", () => requestAnimationFrame(frame), { passive: true });
-addEventListener("resize", frame);
 
-/* Showcase tabs: jump to a scene (desktop scrolls there; mobile swaps in place) */
-tabs.forEach((t, j) => t.addEventListener("click", () => {
-  if (wide() && !reduce) {
-    const top = showcase.getBoundingClientRect().top + scrollY;
-    scrollTo({ top: top + ((j + 0.05) / shots.length) * (showcase.offsetHeight - innerHeight), behavior: "smooth" });
-    return;
+function onScroll() {
+  const span = dive.offsetHeight - innerHeight;
+  const t = span > 0 ? clamp(scrollY / span) : 1;
+  stage.style.setProperty("--water", mixHex(WATER, t));
+  stage.style.setProperty("--surface-light", String(clamp(1 - t * 2)));
+  stage.style.setProperty("--ray-op", String(0.9 * clamp(1 - t * 1.5)));
+  stage.style.setProperty("--handoff", String(clamp((t - 0.78) / 0.22)));
+  if (!reduce) {
+    const lift = ease(clamp((t - 0.2) / 0.45));
+    copy.style.transform = `translateY(${-lift * 140}px)`;
+    copy.style.opacity = String(1 - lift);
+    const rise = ease(clamp(t / 0.75));
+    win.style.setProperty("--win-y", `${70 - rise * 64}%`);
+    win.style.setProperty("--win-s", String(0.92 + rise * 0.08));
+    // Motes rise past the camera at different speeds, which reads as moving down through the water.
+    moteList.forEach((m) => (m.style.transform = `translateY(${-t * 600 * m.dataset.k}px)`));
   }
-  caps.forEach((c, k) => { c.classList.toggle("on", k === j); c.style.opacity = k === j ? 1 : 0; });
-  shots.forEach((s, k) => { s.style.opacity = k === j ? 1 : 0; s.style.clipPath = "none"; });
-  tabs.forEach((r, k) => { r.style.setProperty("--f", k === j ? 1 : 0); r.setAttribute("aria-selected", String(k === j)); });
-}));
+  nav.classList.toggle("scrolled", scrollY > 24);
+  nav.classList.toggle("on-water", scrollY <= 24);
 
-/* ---------- Bento illustrations play when seen ---------- */
-const cal = $(".ill-cal");
-cal.innerHTML = Array.from({ length: 28 }, (_, i) => `<b class="${[4, 9, 17, 23].includes(i) ? "due" : ""}"></b>`).join("");
-const tileIO = new IntersectionObserver((es) => es.forEach((e) => {
-  if (!e.isIntersecting || reduce) return;
-  tileIO.unobserve(e.target);
-  const t = e.target;
-  if (t.classList.contains("t-docs")) animate(t.querySelectorAll(".ill-doc i"), { scaleX: [0, 1], delay: stagger(160), duration: 700, ease: "outQuart" });
-  if (t.classList.contains("t-pdf")) animate(t.querySelectorAll(".hl"), { "--h": [0, 1], delay: stagger(500, { start: 300 }), duration: 700, ease: "inOutQuad" });
-  if (t.classList.contains("t-cards")) animate(t.querySelector(".flip"), { rotateY: [0, 180], duration: 900, delay: 600, loop: true, alternate: true, loopDelay: 1600, ease: "inOutBack" });
-  if (t.classList.contains("t-cal")) animate(t.querySelectorAll(".ill-cal b"), { scale: [0, 1], opacity: [0, 1], delay: stagger(25, { grid: [7, 4], from: "first" }), duration: 400, ease: "outBack" });
-  if (t.classList.contains("t-spell")) animate(t.querySelector("u"), { opacity: [0.2, 1], duration: 600, loop: 3, alternate: true, ease: "inOutSine" });
-}), { threshold: 0.4 });
-$$(".tile").forEach((t) => tileIO.observe(t));
+  // Feature screenshots settle into place as they enter the viewport.
+  if (!reduce) shots.forEach((el) => {
+    const p = ease(clamp((innerHeight - el.getBoundingClientRect().top) / (innerHeight * 0.85)));
+    el.style.transform = `translateY(${(1 - p) * 90}px) scale(${0.95 + p * 0.05})`;
+    el.style.opacity = String(0.35 + p * 0.65);
+  });
+}
+const shots = $$(".row-shot");
+let ticking = false;
+addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { onScroll(); ticking = false; }); } }, { passive: true });
+addEventListener("resize", onScroll);
+onScroll();
 
-/* ---------- Download button matches the visitor's OS ---------- */
+/* ---------- Row copy fades in once ---------- */
+if (!reduce) {
+  const copies = $$(".row-copy, .section-head, .road-card, .facts > div");
+  copies.forEach((c) => (c.style.opacity = "0"));
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    if (!e.isIntersecting) return;
+    io.unobserve(e.target);
+    animate(e.target, { opacity: [0, 1], y: [24, 0], duration: 700, ease: "outQuart" });
+  }), { threshold: 0.2 });
+  copies.forEach((c) => io.observe(c));
+}
+
+/* ---------- Study tools: tabs switch the screenshot, and cycle on their own until clicked ---------- */
+const tabs = $$(".switch button"), imgs = $$(".stack img");
+let auto = true, cur = 0;
+const show = (i) => {
+  cur = i;
+  tabs.forEach((b, j) => b.setAttribute("aria-selected", String(j === i)));
+  imgs.forEach((im, j) => im.classList.toggle("on", j === i));
+};
+tabs.forEach((b, i) => b.addEventListener("click", () => { auto = false; show(i); }));
+let cycleTimer = null;
+new IntersectionObserver((es) => {
+  const vis = es[0].isIntersecting;
+  if (vis && auto && !reduce && !cycleTimer) cycleTimer = setInterval(() => auto ? show((cur + 1) % imgs.length) : clearInterval(cycleTimer), 3800);
+  if (!vis && cycleTimer) { clearInterval(cycleTimer); cycleTimer = null; }
+}, { threshold: 0.5 }).observe($(".study-shot"));
+
+/* ---------- Nerida chat types itself once ---------- */
+const typeInto = (el, text, speed) => new Promise((res) => {
+  if (reduce) { el.textContent = text; return res(); }
+  el.classList.add("caret");
+  let i = 0;
+  const step = () => {
+    el.textContent = text.slice(0, ++i);
+    if (i < text.length) setTimeout(step, speed);
+    else { el.classList.remove("caret"); res(); }
+  };
+  step();
+});
+const chat = $("#ai-msg");
+new IntersectionObserver(async (es, obs) => {
+  if (!es[0].isIntersecting) return;
+  obs.disconnect();
+  const lead = $(".typed", chat);
+  await typeInto(lead, lead.dataset.text, 22);
+  for (const li of $$(".quiz li", chat)) await typeInto(li, li.dataset.text, 14);
+  $(".chat-actions", chat).classList.add("on");
+}, { threshold: 0.5 }).observe(chat);
+
+/* ---------- Download buttons match the visitor's OS ---------- */
 const OS = (() => {
-  const p = (navigator.userAgentData?.platform || navigator.platform || navigator.userAgent).toLowerCase();
-  if (/android|iphone|ipad|ios/.test(navigator.userAgent.toLowerCase())) return "mobile";
+  const ua = navigator.userAgent.toLowerCase();
+  const p = (navigator.userAgentData?.platform || navigator.platform || ua).toLowerCase();
+  if (/android|iphone|ipad/.test(ua)) return "mobile";
   if (p.includes("win")) return "windows";
   if (p.includes("mac")) return "mac";
   if (p.includes("linux")) return "linux";
   return "other";
 })();
-const OS_FILES = {
-  windows: { label: "Windows", test: /-setup\.exe$/ },
-  mac: { label: "macOS", test: /\.dmg$/ },
-  linux: { label: "Linux", test: /\.AppImage$/ },
-};
+const OS_FILES = { windows: { label: "Windows", re: /-setup\.exe$/ }, mac: { label: "macOS", re: /\.dmg$/ }, linux: { label: "Linux", re: /\.AppImage$/ } };
 function pickDownload(assets) {
   const find = (re) => assets.find((a) => re.test(a.name));
-  const mine = OS_FILES[OS];
-  const asset = mine && find(mine.test);
-  if (asset) $$(".os-dl").forEach((b) => { b.href = asset.browser_download_url; b.textContent = `Download for ${mine.label}`; });
-  // Links to the other platforms (and .deb/.rpm on Linux) under the big button.
-  const links = [];
-  for (const [k, v] of Object.entries(OS_FILES)) {
-    const a = find(v.test);
-    if (a && k !== OS) links.push(`<a href="${esc(a.browser_download_url)}">${v.label}</a>`);
-  }
-  if (OS === "linux") [[/\.deb$/, ".deb"], [/\.rpm$/, ".rpm"]].forEach(([re, n]) => { const a = find(re); if (a) links.push(`<a href="${esc(a.browser_download_url)}">${n}</a>`); });
+  const mine = OS_FILES[OS], asset = mine && find(mine.re);
+  if (asset) $$(".os-dl").forEach((b) => {
+    b.href = asset.browser_download_url;
+    if (!b.classList.contains("btn-sm")) b.textContent = `Download for ${mine.label}`;
+  });
+  const others = [];
+  for (const [k, v] of Object.entries(OS_FILES)) { const a = find(v.re); if (a && k !== OS) others.push(`<a href="${esc(a.browser_download_url)}">${v.label}</a>`); }
+  if (OS === "linux") for (const [re, n] of [[/\.deb$/, ".deb"], [/\.rpm$/, ".rpm"]]) { const a = find(re); if (a) others.push(`<a href="${esc(a.browser_download_url)}">${n}</a>`); }
   const note = OS === "mobile" ? "Oceanic is a desktop app for now. Open this page on a computer to install it. " : "";
-  $("#other-os").innerHTML = `${note}Also for ${links.join(", ")}.`;
+  if (others.length) $("#other-os").innerHTML = `${note}Also available for ${others.join(", ")}.`;
 }
 
-/* ---------- Releases as seafloor strata ---------- */
-const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+/* ---------- Releases ---------- */
 fetch(`https://api.github.com/repos/${REPO}/releases?per_page=3`)
   .then((r) => (r.ok ? r.json() : Promise.reject()))
   .then((rels) => {
     if (!rels.length) throw 0;
-    $("#ver").textContent = `Free for Windows, macOS and Linux. Latest: ${rels[0].tag_name}`;
     pickDownload(rels[0].assets || []);
-    $("#strata").innerHTML = rels.map((r) => {
-      const lines = (r.body || "").split("\n").filter((l) => /^\s*[-*]\s/.test(l)).slice(0, 3)
-        .map((l) => `<li>${esc(l.replace(/^\s*[-*]\s+/, "").replace(/\*\*/g, ""))}</li>`).join("");
-      const name = (r.name || r.tag_name).replace(/^.*?Oceanic\s*/, "");
-      return `<article class="stratum"><h4>${esc(name)}</h4><ul>${lines}</ul><a href="${esc(r.html_url)}">Read the full notes</a></article>`;
+    $("#meta").textContent = `Free for Windows, macOS and Linux · ${rels[0].tag_name}`;
+    $("#log").innerHTML = rels.map((r) => {
+      const items = (r.body || "").split("\n").filter((l) => /^\s*[-*]\s/.test(l)).slice(0, 3)
+        .map((l) => `<li>${esc(l.replace(/^\s*[-*]\s+/, "").replace(/\*\*/g, "").replace(/^\p{Extended_Pictographic}️?\s*/u, ""))}</li>`).join("");
+      const date = new Date(r.published_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+      return `<article class="release"><div class="release-head"><h4><a href="${esc(r.html_url)}">${esc(r.tag_name)}</a></h4><time datetime="${esc(r.published_at)}">${esc(date)}</time></div><ul>${items}</ul></article>`;
     }).join("");
   })
-  .catch(() => { $("#strata").innerHTML = `<p class="quiet">Release notes did not load. Read them on the <a href="https://github.com/${REPO}/releases">Releases page</a>.</p>`; });
+  .catch(() => { $("#log").innerHTML = `<p class="muted">Release notes didn't load. See them on <a href="https://github.com/${REPO}/releases">GitHub</a>.</p>`; });
 
-/* ---------- FAQ accordion ---------- */
+/* ---------- FAQ: animate open and close ---------- */
 $$("details").forEach((d) => {
-  const sum = d.querySelector("summary"), body = d.querySelector(".ans");
+  const sum = $("summary", d), body = $(".ans", d);
   sum.addEventListener("click", (e) => {
     if (reduce) return;
     e.preventDefault();
-    if (d.open) animate(body, { height: [body.scrollHeight, 0], opacity: [1, 0], duration: 280, ease: "inOutQuad", onComplete: () => { d.open = false; body.style.height = ""; } });
-    else { d.open = true; animate(body, { height: [0, body.scrollHeight], opacity: [0, 1], duration: 380, ease: "outQuad", onComplete: () => (body.style.height = "") }); }
+    if (d.open) animate(body, { height: [body.scrollHeight, 0], opacity: [1, 0], duration: 260, ease: "inOutQuad", onComplete: () => { d.open = false; body.style.height = ""; } });
+    else { d.open = true; animate(body, { height: [0, body.scrollHeight], opacity: [0, 1], duration: 340, ease: "outQuad", onComplete: () => (body.style.height = "") }); }
   });
 });
 
-/* ---------- Water-drop ripple on buttons ---------- */
-$$(".btn").forEach((btn) => btn.addEventListener("pointerdown", (e) => {
-  if (reduce) return;
-  const r = btn.getBoundingClientRect(), d = document.createElement("span");
-  d.className = "drop"; d.style.left = e.clientX - r.left + "px"; d.style.top = e.clientY - r.top + "px";
-  btn.appendChild(d);
-  animate(d, { width: [0, r.width * 2.2], height: [0, r.width * 2.2], opacity: [0.6, 0], duration: 700, ease: "outQuad", onComplete: () => d.remove() });
-}));
-
-/* ---------- Bubbles near the surface, marine snow in the deep ---------- */
-const host = $(".drift");
-for (let i = 0; i < 40; i++) {
-  const isSnow = i >= 14, d = document.createElement("span"), s = isSnow ? utils.random(1, 3) : utils.random(4, 12);
-  d.className = isSnow ? "snow" : "bubble";
-  d.dataset.o = utils.random(0.3, 0.9, 2);
-  Object.assign(d.style, { width: s + "px", height: s + "px", left: utils.random(0, 100) + "vw", top: utils.random(0, 100) + "vh" });
-  host.appendChild(d);
-  (isSnow ? snow : bubbles).push(d);
-  if (!reduce) animate(d, isSnow
-    ? { y: [0, utils.random(80, 200)], x: [0, utils.random(-20, 20)], duration: utils.random(9000, 16000), loop: true, alternate: true, ease: "inOutSine" }
-    : { y: [0, -utils.random(200, 500)], x: [0, utils.random(-15, 15)], duration: utils.random(5000, 9000), delay: utils.random(0, 3000), loop: true, ease: "inQuad" });
-}
-frame();
-
+/* ---------- Ambient: drifting motes and the Nerida orb ---------- */
 if (!reduce) {
-  /* Hero: the word surfaces through the waterline, then the app rises. Skipped if the tab loads hidden. */
-  if (!document.hidden) {
-  animate(".surface", { scaleX: [0, 1], opacity: [0, 1], duration: 1100, ease: "outExpo" });
-  animate(".above", { y: ["60%", 0], opacity: [0, 1], duration: 1300, delay: 250, ease: "outExpo" });
-  animate(".below", { y: ["-40%", 0], opacity: [0, 0.75], duration: 1600, delay: 450, ease: "outExpo" });
-  animate([".hero-lede", ".hero-act"], { y: [18, 0], opacity: [0, 1], delay: stagger(140, { start: 900 }), duration: 800, ease: "outQuad" });
-  animate(".rise", { y: [180, 0], opacity: [0, 1], duration: 1600, delay: 1000, ease: "outExpo" });
-  }
-  animate("#turb", { baseFrequency: ["0.012 0.06", "0.02 0.09"], duration: 4000, loop: true, alternate: true, ease: "inOutSine" });
-  animate(".rays i", { opacity: [0.35, 1], delay: stagger(600), duration: 3200, loop: true, alternate: true, ease: "inOutSine" });
-
-  /* Fish wiggle */
-
-  /* Nerida orb idle */
+  moteList.forEach((m) => animate(m, { x: [0, utils.random(-24, 24)], duration: utils.random(4000, 9000), loop: true, alternate: true, ease: "inOutSine" }));
+  animate(".rays i", { opacity: [0.45, 1], delay: stagger(500), duration: 3400, loop: true, alternate: true, ease: "inOutSine" });
   animate("#orb .o-halo", { scale: [1, 1.12], opacity: [0.8, 1], duration: 1800, loop: true, alternate: true, ease: "inOutSine" });
   animate("#orb .o-ring", { scale: [1, 1.5], opacity: [0.9, 0], duration: 1800, loop: true, ease: "outQuad" });
   animate("#orb .o-core", { scale: [0.85, 1.15], duration: 1400, loop: true, alternate: true, ease: "inOutSine" });
   animate("#orb .o-waves", { x: [0, -16], duration: 3000, loop: true, ease: "linear" });
   animate("#orb .o-spark", { opacity: [1, 0.2], scale: [1, 0.6], delay: stagger(700), duration: 1100, loop: true, alternate: true, ease: "inOutSine" });
-
-  /* Jellyfish pulse, anglerfish lure */
-  animate(".jelly .bell", { scaleY: [1, 0.86], scaleX: [1, 1.06], duration: 1300, loop: true, alternate: true, ease: "inOutSine" });
-  animate(".jelly .tent path", { x: [-3, 3], delay: stagger(200), duration: 2200, loop: true, alternate: true, ease: "inOutSine" });
-  animate(".lure-glow", { opacity: [0.5, 1], scale: [0.85, 1.1], duration: 1700, loop: true, alternate: true, ease: "inOutSine" });
-}
-
-/* ---------- Liveliness: tide strip, sea life, ripples, hover reactions ---------- */
-const row = $(".tide-row");
-row.innerHTML += row.innerHTML.replace(/<li>/g, '<li aria-hidden="true">');
-if (!reduce) animate(row, { x: ["0%", "-50%"], duration: 45000, loop: true, ease: "linear" });
-
-const life = $(".life");
-const R = (a, b) => a + Math.random() * (b - a);
-const FISH_COLORS = ["#8ee6dc", "#5fe3ff", "#fcd34d", "#f9a8d4", "#a5b4fc"];
-const svgEl = (vb, w, h, inner) => {
-  const el = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  el.setAttribute("viewBox", vb); el.setAttribute("width", w); el.setAttribute("height", h);
-  el.innerHTML = inner;
-  life.appendChild(el);
-  return el;
-};
-const makeFish = () => {
-  const c = FISH_COLORS[Math.floor(R(0, FISH_COLORS.length))], s = R(18, 42);
-  return svgEl("0 0 40 20", s, s / 2, `<g class="tail" style="transform-origin:10px 10px"><path d="M10 10 L0 2 L3 10 L0 18Z" fill="${c}" opacity=".8"/></g>
-    <path d="M8 10 C14 1 32 1 40 10 C32 19 14 19 8 10Z" fill="${c}"/><circle cx="33" cy="8.5" r="1.6" fill="#01070e"/>`);
-};
-// Each fish swims its own random path, then picks a new one.
-const swim = (el) => {
-  const ltr = Math.random() > 0.5, y = R(0.12, 0.88) * innerHeight;
-  el.style.scale = ltr ? "1 1" : "-1 1";
-  animate(el, {
-    x: ltr ? [-80, innerWidth + 80] : [innerWidth + 80, -80],
-    y: [y, y + R(-120, 120)],
-    duration: R(14000, 26000), delay: R(0, 6000), ease: "inOutSine",
-    onComplete: () => swim(el),
-  });
-};
-
-if (!reduce) {
-  const fish = Array.from({ length: 7 }, makeFish);
-  fish.forEach((f) => {
-    f.style.translate = "-100px 0";
-    swim(f);
-    animate(f.querySelector(".tail"), { rotate: [-18, 18], duration: R(250, 420), loop: true, alternate: true, ease: "inOutSine" });
-  });
-
-  const ray = svgEl("0 0 160 90", 180, 100, `<path class="wing" d="M80 20 C60 20 30 40 0 46 C30 54 60 60 80 70 C100 60 130 54 160 46 C130 40 100 20 80 20Z" fill="#1b3a52" opacity=".85" style="transform-origin:80px 45px"/>
-    <path d="M80 68 C82 76 84 84 88 90" stroke="#1b3a52" stroke-width="2" fill="none"/><circle cx="72" cy="30" r="1.5" fill="#8ee6dc"/><circle cx="88" cy="30" r="1.5" fill="#8ee6dc"/>`);
-  const glide = () => animate(ray, { x: [innerWidth + 200, -260], y: [R(0.3, 0.7) * innerHeight, R(0.3, 0.7) * innerHeight], rotate: [-6, 4], duration: 30000, delay: R(4000, 12000), ease: "inOutSine", onComplete: glide });
-  ray.style.translate = `${innerWidth + 200}px 0`;
-  glide();
-  animate(ray.querySelector(".wing"), { scaleY: [1, 0.6], duration: 1800, loop: true, alternate: true, ease: "inOutSine" });
-
-  // Fish live in the bright water; the manta shows up in the deep.
-  const fade = () => {
-    const max = document.documentElement.scrollHeight - innerHeight, p = max > 0 ? scrollY / max : 0;
-    fish.forEach((f) => (f.style.opacity = clamp(1 - (p - 0.25) * 4)));
-    ray.style.opacity = clamp((p - 0.35) * 4) * 0.8;
-  };
-  addEventListener("scroll", fade, { passive: true });
-  fade();
-
-  // Splash ripples on click.
-  const rip = $(".ripples");
-  const ring = (x, y, size, cls, dur) => {
-    const r = document.createElement("span");
-    r.className = "ring " + cls; r.style.left = x + "px"; r.style.top = y + "px";
-    rip.appendChild(r);
-    animate(r, { width: [0, size], height: [0, size], opacity: [0.8, 0], duration: dur, ease: "outQuad", onComplete: () => r.remove() });
-  };
-  addEventListener("pointerdown", (e) => {
-    ring(e.clientX, e.clientY, 170, "splash", 1000);
-    setTimeout(() => ring(e.clientX, e.clientY, 110, "", 900), 120);
-  });
-
-  // Tiles tilt toward the cursor.
-  $$(".tile").forEach((t) => {
-    t.addEventListener("pointermove", (e) => {
-      const r = t.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
-      animate(t, { rotateY: x * 12, rotateX: -y * 12, scale: 1.02, duration: 300, ease: "outQuad" });
-    });
-    t.addEventListener("pointerleave", () => animate(t, { rotateY: 0, rotateX: 0, scale: 1, duration: 900, ease: "outElastic(1, .5)" }));
-  });
-
-  // The orb leans toward the cursor.
-  const orb = $("#orb");
-  $(".nerida").addEventListener("pointermove", (e) => {
-    const r = orb.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1;
-    const k = Math.min(18, d / 20);
-    animate(orb, { x: (dx / d) * k, y: (dy / d) * k, duration: 600, ease: "outQuad" });
-  });
-  $(".nerida").addEventListener("pointerleave", () => animate(orb, { x: 0, y: 0, duration: 1000, ease: "outElastic(1, .5)" }));
-
-  // Buttons wobble like jelly on hover.
-  $$(".btn, .dl-mini").forEach((b) => b.addEventListener("pointerenter", () =>
-    animate(b, { scaleX: [1, 1.08, 0.96, 1.03, 1], scaleY: [1, 0.92, 1.04, 0.98, 1], duration: 650, ease: "outQuad" })));
+  // Hero copy enters once on load.
+  if (!document.hidden) animate([".dive-copy h1", ".lede", ".cta-row", ".meta"], { y: [24, 0], opacity: [0, 1], delay: stagger(110, { start: 150 }), duration: 1000, ease: "outQuart" });
 }

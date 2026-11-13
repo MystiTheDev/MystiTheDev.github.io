@@ -3,222 +3,228 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Oceanic: a free, offline study workspace</title>
-  <meta name="description" content="Notes, mindmaps, docs, sketches and PDFs in one free app, with Nerida, a study AI that runs on your own PC." />
+  <title>Oceanic: everything you study, in one place</title>
+  <meta name="description" content="Oceanic is a free, offline study workspace: notes, mindmaps, flashcards, tests and a calendar, with Nerida, a study AI that runs on your own PC." />
   <meta property="og:title" content="Oceanic" />
-  <meta property="og:description" content="A free, offline study workspace. Your notes stay on your PC." />
+  <meta property="og:description" content="Everything you study, in one place. Free, offline, and private." />
   <meta property="og:image" content="https://mystithedev.github.io/assets/og.png" />
-  <meta name="twitter:card" content="summary_large_image" />
   <meta property="og:url" content="https://mystithedev.github.io/" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta name="theme-color" content="#06324a" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#F6F8FA" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#060C13" media="(prefers-color-scheme: dark)" />
+  <meta name="color-scheme" content="light dark" />
   <link rel="icon" href="assets/icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500&family=Lora:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
-  <div class="sea" aria-hidden="true"></div>
-  <div class="glow" aria-hidden="true"></div>
-  <div class="rays" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-  <div class="drift" aria-hidden="true"></div>
-  <div class="life" aria-hidden="true"></div>
-  <div class="ripples" aria-hidden="true"></div>
 
-  <div class="line" aria-hidden="true">
-    <div class="line-rope"></div>
-    <div class="line-weight"><span id="depth">0</span> m</div>
-  </div>
-
-  <header class="bar">
-    <a class="brand" href="#top"><img src="assets/icon.png" alt="" width="34" height="34" />Oceanic</a>
-    <nav>
-      <a href="#showcase">The app</a>
-      <a href="#more">Features</a>
-      <a href="#nerida">Nerida</a>
-      <a href="#faq">Questions</a>
-      <a class="dl-mini" href="#download">Download</a>
-    </nav>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="#top"><img src="assets/icon.png" alt="" width="28" height="28" />Oceanic</a>
+      <nav aria-label="Main">
+        <a href="#features">Features</a>
+        <a href="#nerida">Nerida</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <a class="btn btn-sm os-dl" href="https://github.com/MystiTheDev/oceanic/releases/latest">Download</a>
+    </div>
   </header>
 
   <main id="main">
-    <!-- 0 m: surface -->
-    <section class="hero" id="top">
-      <svg width="0" height="0" aria-hidden="true">
-        <filter id="underwater">
-          <feTurbulence id="turb" type="fractalNoise" baseFrequency="0.012 0.06" numOctaves="2" seed="3" />
-          <feDisplacementMap in="SourceGraphic" scale="14" />
-        </filter>
-      </svg>
-      <div class="hero-top">
-        <div class="waterline">
-          <h1 class="word above">Oceanic</h1>
-          <p class="word below" aria-hidden="true">Oceanic</p>
-          <div class="surface"></div>
+    <!-- Hero: the dive. A pinned scene; scroll takes the camera from the surface into deep water. -->
+    <section class="dive" id="top" aria-label="Introduction">
+      <div class="dive-stage">
+        <div class="water" aria-hidden="true">
+          <div class="water-light"></div>
+          <div class="rays"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="motes"></div>
         </div>
-        <div class="hero-side">
-          <p class="hero-lede">Notes, mindmaps, docs, sketches and PDFs in one free app. It works offline, and your notes never leave your PC.</p>
-          <div class="hero-act">
-            <a class="btn os-dl" href="https://github.com/MystiTheDev/oceanic/releases/latest">Download Oceanic</a>
-            <span class="ver" id="ver">Free for Windows, macOS and Linux</span>
+        <div class="dive-copy">
+          <h1>Everything you study, in&nbsp;one&nbsp;place.</h1>
+          <p class="lede">Notes, mindmaps, flashcards, tests and a calendar in one free app. It works offline, and your notes stay on your PC.</p>
+          <div class="cta-row">
+            <a class="btn btn-lg os-dl" href="https://github.com/MystiTheDev/oceanic/releases/latest">Download Oceanic</a>
+            <a class="link-arrow" href="#features">See what's inside</a>
           </div>
+          <p class="meta" id="meta">Free for Windows, macOS and Linux</p>
         </div>
-      </div>
-      <div class="rise">
-        <figure class="frame">
-          <div class="frame-bar"><i></i><i></i><i></i></div>
-          <img src="assets/shots/home.jpg" alt="Oceanic home screen" width="1600" height="1000" />
+        <figure class="window dive-window">
+          <div class="window-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+          <img src="assets/shots/home.jpg" alt="The Oceanic home screen with recent pages and quick actions" width="2880" height="1620" />
         </figure>
       </div>
-      <div class="tide" aria-label="Oceanic at a glance">
-        <ul class="tide-row">
-          <li>Free to use</li><li>Works offline</li><li>Notes stay on your PC</li><li>Built-in study AI</li><li>No account needed</li><li>Updates itself</li><li>Windows, macOS and Linux</li>
-        </ul>
-      </div>
     </section>
 
-    <!-- 200 m: pinned showcase -->
-    <section class="showcase" id="showcase">
-      <div class="mark">200 m</div>
-      <div class="stage">
-        <div class="captions">
-          <article class="cap on"><h2>Home</h2><p>Pick up where you left off. Recent pages, study tools and Nerida are one click away.</p></article>
-          <article class="cap"><h2>Notes</h2><p>Write in blocks. Nest sub-pages, link notes together, and add tables, math and images.</p></article>
-          <article class="cap"><h2>Mindmaps</h2><p>Lay out a topic visually, then link each idea back to the note it came from.</p></article>
-          <article class="cap"><h2>Atlas</h2><p>See how all your notes connect, and label the links between topics.</p></article>
-          <article class="cap"><h2>Nerida</h2><p>Ask questions about your notes and turn them into study material, right beside your work.</p></article>
-        </div>
-        <div class="screens">
-          <figure class="frame big">
-            <div class="frame-bar"><i></i><i></i><i></i></div>
-            <!-- data-fx/fy: zoom focus point (% of image); data-z: zoom level; data-note: callout text -->
-            <div class="shots">
-              <img src="assets/shots/home.jpg" alt="Oceanic home screen" data-fx="57" data-fy="50" data-z="1.9" data-note="Start something new in one click" />
-              <img src="assets/shots/notes.jpg" alt="Oceanic notes" data-fx="50" data-fy="29" data-z="1.9" data-note="Status and tags on every page" />
-              <img src="assets/shots/mindmap.jpg" alt="Oceanic mindmap" data-fx="33.5" data-fy="40" data-z="1.9" data-note="Each branch links to a note" />
-              <img src="assets/shots/canvas.jpg" alt="Oceanic Atlas linking study pages" data-fx="57" data-fy="43" data-z="1.9" data-note="Label how ideas connect" />
-              <img src="assets/shots/nerida.jpg" alt="Nerida chat beside a note" data-fx="42" data-fy="28" data-z="1.9" data-note="A quiz made from your own note" />
-              <div class="callout" aria-hidden="true"><span class="dot"></span><span class="note"></span></div>
+    <!-- Features: alternating rows -->
+    <section class="section" id="features" aria-labelledby="features-title">
+      <div class="container">
+        <header class="section-head">
+          <h2 id="features-title">A calm place to do the work</h2>
+          <p>Oceanic keeps your notes, maps and revision side by side, so you spend less time switching apps and more time learning.</p>
+        </header>
+
+        <article class="row">
+          <div class="row-copy">
+            <h3>Notes that keep up with your classes</h3>
+            <p>Write in blocks, nest pages inside pages and link ideas together. Every page has a date, a status and tags, so you can see what's due and what's done.</p>
+            <ul class="ticks">
+              <li>Headings, lists, tables, math and images</li>
+              <li>Sub-pages and backlinks</li>
+              <li>Import from Markdown, Word or Notion</li>
+            </ul>
+          </div>
+          <figure class="window row-shot"><div class="window-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+            <img src="assets/shots/notes.jpg" alt="A Cell Structure note with status, tags, headings and a checklist" width="2880" height="1620" loading="lazy" />
+          </figure>
+        </article>
+
+        <article class="row row-flip">
+          <div class="row-copy">
+            <h3>Mindmaps that link back to your notes</h3>
+            <p>Lay out a topic visually. Each branch can point to the note it came from, so a map is a way into your material, not a separate copy of it.</p>
+            <ul class="ticks">
+              <li>Colored branches and shapes</li>
+              <li>Templates for common subjects</li>
+              <li>Export as an image or PDF</li>
+            </ul>
+          </div>
+          <figure class="window row-shot"><div class="window-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+            <img src="assets/shots/mindmap.jpg" alt="A mindmap of The Cell with branches linked to notes" width="2880" height="1620" loading="lazy" />
+          </figure>
+        </article>
+
+        <article class="row">
+          <div class="row-copy">
+            <h3>Revision built in</h3>
+            <p>Write <code>question :: answer</code> in any note and it becomes a flashcard. Review with spaced repetition, test yourself, and plan it all on the calendar.</p>
+            <div class="switch" role="tablist" aria-label="Study tools">
+              <button role="tab" aria-selected="true" data-i="0">Flashcards</button>
+              <button role="tab" aria-selected="false" data-i="1">Tests</button>
+              <button role="tab" aria-selected="false" data-i="2">Calendar</button>
+            </div>
+          </div>
+          <figure class="window row-shot study-shot"><div class="window-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+            <div class="stack">
+              <img class="on" src="assets/shots/flashcards.jpg" alt="Reviewing a flashcard: What does the nucleus do?" width="2880" height="1620" loading="lazy" />
+              <img src="assets/shots/test.jpg" alt="A multiple-choice test made from flashcards" width="2880" height="1620" loading="lazy" />
+              <img src="assets/shots/calendar.jpg" alt="The study calendar with exams and assignments" width="2880" height="1620" loading="lazy" />
             </div>
           </figure>
-          <div class="tabs" role="tablist" aria-label="App views">
-            <button role="tab" aria-selected="true"><span>Home</span><i></i></button>
-            <button role="tab"><span>Notes</span><i></i></button>
-            <button role="tab"><span>Mindmaps</span><i></i></button>
-            <button role="tab"><span>Atlas</span><i></i></button>
-            <button role="tab"><span>Nerida</span><i></i></button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 800 m: bento -->
-    <section class="more" id="more">
-      <div class="mark">800 m</div>
-      <h2 data-scrub>And everything else a study day needs</h2>
-      <div class="bento">
-        <article class="tile t-docs" data-scrub>
-          <div class="ill ill-doc" aria-hidden="true"><i></i><i></i><i></i><i></i><i class="short"></i></div>
-          <h3>Docs</h3><p>Write essays in a Word-style editor and export to .docx or PDF.</p>
-        </article>
-        <article class="tile t-pdf" data-scrub>
-          <div class="ill ill-pdf" aria-hidden="true"><span class="pg"><i></i><i class="hl"></i><i></i><i class="hl hl2"></i><i></i></span></div>
-          <h3>PDF reader</h3><p>Highlight, underline, draw and add sticky notes. Quote a page into your notes.</p>
-        </article>
-        <article class="tile t-cards" data-scrub>
-          <div class="ill ill-flip" aria-hidden="true"><div class="flip"><span class="f">Mitochondria?</span><span class="b">Makes energy for the cell</span></div></div>
-          <h3>Flashcards and tests</h3><p>Review with spaced repetition, or set yourself a test.</p>
-        </article>
-        <article class="tile t-cal" data-scrub>
-          <div class="ill ill-cal" aria-hidden="true"></div>
-          <h3>Study calendar</h3><p>Plan sessions and see what's due.</p>
-        </article>
-        <article class="tile t-spell" data-scrub>
-          <div class="ill ill-spell" aria-hidden="true"><span>photosynthesis is the <u>proccess</u> plants use</span></div>
-          <h3>Offline spellcheck</h3><p>Fix typos without sending text anywhere.</p>
         </article>
       </div>
     </section>
 
-    <!-- 1000 m: Nerida -->
-    <section class="nerida" id="nerida">
-      <div class="mark">1000 m</div>
-      <div class="nerida-grid">
+    <!-- Nerida: dark band with a mock chat -->
+    <section class="nerida" id="nerida" aria-labelledby="nerida-title">
+      <div class="container nerida-grid">
         <div class="nerida-copy">
-          <div class="orb-wrap"><div id="orb"></div><span class="beta">BETA</span></div>
-          <h2 data-scrub>Nerida studies with you</h2>
-          <p class="big" data-scrub>Nerida is Oceanic's AI. It runs on your PC through llama.cpp, so it can read your notes without sending them anywhere.</p>
+          <div class="orb-line"><div id="orb" aria-hidden="true"></div><span class="beta">Beta</span></div>
+          <h2 id="nerida-title">Meet Nerida, a study AI that stays on your PC</h2>
+          <p>Nerida runs locally through llama.cpp. It reads the notes you attach and turns them into quizzes, flashcards and summaries, without sending them anywhere.</p>
+          <dl class="points">
+            <div><dt>Runs on your PC</dt><dd>The model downloads once. After that, Nerida works offline.</dd></div>
+            <div><dt>Answers from your notes</dt><dd>Attach a note with @ or a file with the paperclip.</dd></div>
+            <div><dt>Cloud only if you choose</dt><dd>Other providers are optional and ask before any note text is sent.</dd></div>
+          </dl>
         </div>
-        <ul class="glow-list">
-          <li data-scrub><b>Ask about your notes.</b> Attach a note with @ or a file with the paperclip, and answers come from your own material.</li>
-          <li data-scrub><b>Make study material.</b> Turn a note or PDF into flashcards, a test or a summary, then insert it straight into a page.</li>
-          <li data-scrub><b>Download once.</b> The model downloads on first use and keeps going in the background while you work.</li>
-        </ul>
+        <div class="chat" aria-label="Example conversation with Nerida">
+          <div class="chat-head"><span class="chat-dot"></span>Nerida <span class="chat-model">Nerida AI · local</span></div>
+          <div class="chat-body">
+            <div class="msg me"><span class="chip">🌿 Photosynthesis</span>Quiz me on this note</div>
+            <div class="msg ai" id="ai-msg">
+              <p class="typed" data-text="Here are three questions from your note."></p>
+              <ol class="quiz">
+                <li data-text="What does a plant make from carbon dioxide and water?"></li>
+                <li data-text="Name two factors that limit the rate of photosynthesis."></li>
+                <li data-text="Where in the cell does photosynthesis happen?"></li>
+              </ol>
+              <div class="chat-actions"><span>Make flashcards</span><span>Insert into note</span></div>
+            </div>
+          </div>
+          <div class="chat-input">Ask Nerida… <kbd>@</kbd></div>
+        </div>
       </div>
     </section>
 
-    <!-- 2000 m: privacy -->
-    <section class="private">
-      <div class="mark">2000 m</div>
-      <svg class="jelly" viewBox="0 0 120 200" aria-hidden="true">
-        <defs><radialGradient id="jg" cx=".5" cy=".35"><stop offset="0" stop-color="#e9ddff"/><stop offset=".6" stop-color="#a78bfa" stop-opacity=".5"/><stop offset="1" stop-color="#a78bfa" stop-opacity="0"/></radialGradient></defs>
-        <path class="bell" d="M10 60 C10 10 110 10 110 60 C95 55 80 66 60 60 C40 66 25 55 10 60Z" fill="url(#jg)" />
-        <g class="tent" fill="none" stroke="#c4b5fd" stroke-opacity=".55" stroke-width="1.5" stroke-linecap="round">
-          <path d="M30 62 C26 100 38 130 30 180" /><path d="M50 64 C46 110 58 140 50 195" /><path d="M70 64 C74 110 62 140 70 190" /><path d="M90 62 C94 100 82 130 90 175" />
-        </g>
-      </svg>
-      <p class="statement" data-scrub>Down here it's dark and quiet. So is Oceanic. Your notes stay on your PC.</p>
-      <dl class="facts">
-        <div data-scrub><dt>Offline</dt><dd>Everything works without the internet.</dd></div>
-        <div data-scrub><dt>Free</dt><dd>No subscription and no account.</dd></div>
-        <div data-scrub><dt>Your choice</dt><dd>Cloud AI models are optional and ask before your note text is sent anywhere.</dd></div>
-      </dl>
-    </section>
-
-    <!-- 3000 m: FAQ -->
-    <section class="faq" id="faq">
-      <div class="mark">3000 m</div>
-      <h2 data-scrub>Questions</h2>
-      <div class="faq-list">
-        <details><summary>Is Oceanic free?</summary><div class="ans"><p>Yes. Download it and use everything, with no account.</p></div></details>
-        <details><summary>Do my notes go online?</summary><div class="ans"><p>No. Notes are stored on your PC and Nerida runs there too. A cloud provider is only used if you add one and agree to it.</p></div></details>
-        <details><summary>Which systems does it run on?</summary><div class="ans"><p>Windows, macOS and Linux. Mobile versions are planned.</p></div></details>
-        <details><summary>Will Nerida run on my laptop?</summary><div class="ans"><p>Nerida is made for everyday laptops. Answers come faster on stronger hardware.</p></div></details>
-        <details><summary>How do I get updates?</summary><div class="ans"><p>Oceanic updates itself when a new version is out.</p></div></details>
+    <!-- Privacy strip -->
+    <section class="section facts-section" aria-label="Privacy">
+      <div class="container facts">
+        <div><h3>Offline first</h3><p>Everything works without the internet. Your files live on your computer.</p></div>
+        <div><h3>Free</h3><p>No subscription, no trial and no account to create.</p></div>
+        <div><h3>Updates itself</h3><p>New versions install in the background when they're ready.</p></div>
       </div>
     </section>
 
-    <!-- 4000 m: seafloor -->
-    <section class="floor" id="download">
-      <div class="mark">4000 m</div>
-      <svg class="angler" viewBox="0 0 220 140" aria-hidden="true">
-        <defs><radialGradient id="lure"><stop offset="0" stop-color="#fffbe0"/><stop offset=".3" stop-color="#ffe9a3"/><stop offset="1" stop-color="#ffe9a3" stop-opacity="0"/></radialGradient></defs>
-        <circle class="lure-glow" cx="40" cy="22" r="26" fill="url(#lure)" />
-        <path d="M95 60 C80 20 50 10 40 22" fill="none" stroke="#3a4a55" stroke-width="2" />
-        <path d="M60 80 C70 40 150 35 180 70 L215 45 L208 80 L215 115 L180 92 C150 125 70 120 60 80Z" fill="#0f1c25" stroke="#24343f" />
-        <path d="M62 80 L74 74 L78 84 L86 76 L90 86 L98 80" fill="none" stroke="#cdb98f" stroke-opacity=".6" stroke-width="1.5" />
-        <circle cx="96" cy="64" r="3.5" fill="#8ee6dc" />
-      </svg>
-      <div class="floor-grid">
+    <!-- Roadmap -->
+    <section class="section" id="roadmap" aria-labelledby="roadmap-title">
+      <div class="container">
+        <header class="section-head">
+          <h2 id="roadmap-title">What's coming next</h2>
+          <p>Oceanic is built by one person and shaped by the people who use it. Here's what's being worked on.</p>
+        </header>
+        <div class="roadmap">
+          <article class="road-card">
+            <span class="status status-progress">In progress</span>
+            <h3>Atlas</h3>
+            <p>A map of everything you know. Atlas links your pages by topic and lets you label how ideas relate, so you can see the shape of a subject at a glance.</p>
+            <div class="teaser" aria-hidden="true"><img src="assets/shots/canvas.jpg" alt="" loading="lazy" /></div>
+          </article>
+          <article class="road-card">
+            <span class="status status-planned">Planned</span>
+            <h3>Oceanic for mobile</h3>
+            <p>Your notes and flashcards on your phone, so you can revise on the bus and pick up on your laptop where you left off.</p>
+            <div class="phone" aria-hidden="true"><div class="phone-screen"><i></i><i></i><i></i><i></i></div></div>
+          </article>
+        </div>
+        <p class="suggest">Have an idea? <a href="https://github.com/MystiTheDev/oceanic/issues">Suggest it on GitHub</a>.</p>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section" id="faq" aria-labelledby="faq-title">
+      <div class="container faq">
+        <h2 id="faq-title">Questions</h2>
+        <div class="faq-list">
+          <details><summary>Is Oceanic really free?</summary><div class="ans"><p>Yes. Download it and use every feature, with no account and no trial.</p></div></details>
+          <details><summary>Do my notes go online?</summary><div class="ans"><p>No. Notes are stored on your computer, and Nerida runs there too. A cloud AI provider is only used if you add one and agree to it.</p></div></details>
+          <details><summary>Which systems does it run on?</summary><div class="ans"><p>Windows, macOS and Linux. A mobile version is planned.</p></div></details>
+          <details><summary>Will Nerida run on my laptop?</summary><div class="ans"><p>Nerida is made for everyday laptops. Answers arrive faster on stronger hardware.</p></div></details>
+          <details><summary>Can I bring my notes from another app?</summary><div class="ans"><p>Yes. Import Markdown, Word, plain text, HTML or a Notion export.</p></div></details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Download + changelog -->
+    <section class="section download" id="download" aria-labelledby="dl-title">
+      <div class="container dl-grid">
         <div>
-          <h2 data-scrub>You've reached the seafloor</h2>
-          <p class="big" data-scrub>Start with a single note. Everything else is waiting a click away.</p>
-          <a class="btn btn-big os-dl" id="dl" href="https://github.com/MystiTheDev/oceanic/releases/latest">Download Oceanic</a>
+          <h2 id="dl-title">Start with one note</h2>
+          <p>Oceanic is free and takes a minute to install.</p>
+          <a class="btn btn-lg os-dl" href="https://github.com/MystiTheDev/oceanic/releases/latest">Download Oceanic</a>
           <p class="other-os" id="other-os"></p>
         </div>
         <div>
-          <h3 class="strata-title">Recent releases</h3>
-          <div class="strata" id="strata"><p class="quiet">Loading recent releases…</p></div>
+          <h3 class="log-title">Recent releases</h3>
+          <div class="log" id="log"><p class="muted">Loading recent releases…</p></div>
         </div>
       </div>
     </section>
   </main>
 
   <footer class="foot">
-    <p>Built by <a href="https://github.com/MystiTheDev">MystiTheDev</a>. <a href="https://github.com/MystiTheDev/oceanic">Source on GitHub</a>. <a href="https://github.com/MystiTheDev/oceanic/issues">Report a bug</a>.</p>
+    <div class="container foot-grid">
+      <div class="foot-brand"><a class="brand" href="#top"><img src="assets/icon.png" alt="" width="24" height="24" />Oceanic</a><p>A free, offline study workspace.</p></div>
+      <div><h4>Product</h4><a href="#features">Features</a><a href="#nerida">Nerida</a><a href="#roadmap">Roadmap</a><a href="#download">Download</a></div>
+      <div><h4>Project</h4><a href="https://github.com/MystiTheDev/oceanic">Source code</a><a href="https://github.com/MystiTheDev/oceanic/releases">Releases</a><a href="https://github.com/MystiTheDev/oceanic/issues">Report a bug</a></div>
+    </div>
+    <div class="container foot-base">Made by <a href="https://github.com/MystiTheDev">MystiTheDev</a>.</div>
   </footer>
 
   <script type="module" src="main.js"></script>
