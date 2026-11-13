@@ -280,3 +280,23 @@ details[open] summary::after { transform: rotate(-135deg) translateY(-3px); }
 .tag-left { translate: -100% -50%; }
 .tag b { font-size: 14px; font-weight: 600; color: #fff; }
 .tag span { font-size: 12.5px; color: #9FB3C6; }
+
+/* ---------- Phones: bigger portrait crop of the app, labels stacked on it ---------- */
+@media (max-width: 900px) {
+  .dive { height: 260vh; }
+  .dive-window, .dive-callouts { width: 92vw; top: calc(50% + 30px); }
+  .dive-window img { aspect-ratio: 4 / 5; object-fit: cover; object-position: 22% 0; }
+  .dive-callouts { display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; padding: 12px; aspect-ratio: 4 / 5; }
+  .dive-callouts .hl { display: none; }
+  .tag, .tag-left { position: static; translate: none; white-space: normal; }
+  .tag b { font-size: 13.5px; }
+}
+@media (max-width: 900px) {
+  .dive-window, .dive-callouts { top: calc(50% - 50px); }
+  .dive-window img { aspect-ratio: 1 / 1; object-position: 56% 0; }
+  /* Labels sit in a 2x2 grid directly under the window instead of covering it. */
+  .dive-callouts { aspect-ratio: auto; height: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0; translate: -50% calc(46vw + 12px + var(--win-off, 60vh)); }
+  .tag { padding: 8px 10px; border-radius: 10px; }
+  .tag b { font-size: 12.5px; line-height: 1.25; }
+  .tag span { font-size: 11.5px; }
+}
