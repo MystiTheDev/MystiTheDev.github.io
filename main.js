@@ -68,7 +68,8 @@ const GLOW2 = [[0, [14, 116, 144, .3]], [0.5, [59, 130, 246, .2]], [1, [124, 58,
 
 const sea = $(".sea"), glow = $(".glow"), rays = $(".rays"), rope = $(".line-rope"), weight = $(".line-weight"), depth = $("#depth"), bar = $(".bar");
 const riseFrame = $(".rise .frame"), jelly = $(".jelly"), orbWrap = $(".orb-wrap"), angler = $(".angler");
-const showcase = $(".showcase"), shots = $$(".big .shots img"), caps = $$(".cap"), rail = $$(".rail i"), bigFrame = $(".big");
+const showcase = $(".showcase"), shots = $$(".big .shots img"), caps = $$(".cap"), tabs = $$(".tabs button"), bigFrame = $(".big");
+const callout = $(".callout"), note = $(".callout .note"), washMap = $("#wash-map");
 const scrubs = $$("[data-scrub]");
 const bubbles = [], snow = [];
 
@@ -106,21 +107,41 @@ function frame() {
     const sp = clamp(-r.top / (r.height - innerHeight));
     const seg = sp * shots.length - 0.0001;
     const idx = Math.max(0, Math.floor(seg)), local = seg - idx;
-    const tr = ease(clamp((local - 0.7) / 0.3)); // last 30% of each scene is the transition
+    const last = idx === shots.length - 1;
+    // Scene timeline: settle, zoom into a detail with a callout, zoom out, then the water transition.
+    const tr = last ? 0 : ease(clamp((local - 0.72) / 0.28));
+    const zin = ease(clamp((local - 0.12) / 0.28)), zout = last ? 0 : ease(clamp((local - 0.5) / 0.2));
+    const zk = zin * (1 - zout);
+    const cur = shots[idx], z = 1 + (+cur.dataset.z - 1) * zk;
     shots.forEach((img, i) => {
-      let o = 0, s = 1, ty = 0;
-      if (i === idx) { o = 1 - (i < shots.length - 1 ? tr : 0); s = 1 + 0.06 * tr; ty = -30 * tr; }
-      else if (i === idx + 1) { o = tr; s = 0.94 + 0.06 * tr; ty = 40 * (1 - tr); }
-      img.style.opacity = o; img.style.scale = s; img.style.translate = `0 ${ty}px`;
+      img.style.transformOrigin = `${img.dataset.fx}% ${img.dataset.fy}%`;
+      img.style.filter = "";
+      if (i === idx) {
+        img.style.opacity = 1; img.style.zIndex = 1; img.style.clipPath = "none";
+        img.style.scale = String(z * (1 + 0.05 * tr));
+      } else if (i === idx + 1 && tr > 0) {
+        // Next view rises from the bottom like water filling the frame, edge rippling.
+        img.style.opacity = 1; img.style.zIndex = 2; img.style.scale = "1";
+        img.style.clipPath = `inset(${(1 - tr) * 100}% 0 0 0)`;
+        img.style.filter = "url(#wash)";
+      } else { img.style.opacity = 0; img.style.zIndex = 0; }
     });
+    washMap.setAttribute("scale", String(Math.sin(tr * Math.PI) * 45));
+    callout.style.left = cur.dataset.fx + "%";
+    callout.style.top = cur.dataset.fy + "%";
+    note.textContent = cur.dataset.note;
+    const co = clamp((local - 0.28) / 0.08) * (1 - clamp((local - 0.58) / 0.08));
+    callout.style.opacity = co;
+    callout.style.scale = String(0.8 + 0.2 * co);
     caps.forEach((c, i) => {
       let o = 0, ty = 30;
-      if (i === idx) { o = 1 - (i < caps.length - 1 ? tr : 0); ty = -30 * tr; }
-      else if (i === idx + 1) { o = tr; ty = 30 * (1 - tr); }
+      // Outgoing caption leaves in the first half of the transition, incoming arrives in the second.
+      if (i === idx) { o = 1 - clamp(tr * 2); ty = -30 * clamp(tr * 2); }
+      else if (i === idx + 1) { o = clamp(tr * 2 - 1); ty = 30 * (1 - clamp(tr * 2 - 1)); }
       c.style.opacity = o; c.style.translate = `0 ${ty}px`;
       c.classList.toggle("on", o > 0.5);
     });
-    rail.forEach((d, i) => d.style.setProperty("--f", clamp(seg - i)));
+    tabs.forEach((t, i) => { t.style.setProperty("--f", clamp(seg - i)); t.setAttribute("aria-selected", String(i === idx)); });
     // The frame turns slightly as scenes change, like a slow camera move.
     bigFrame.style.transform = `rotateY(${-8 + sp * 16}deg) rotateX(${4 - Math.sin(local * Math.PI) * 3}deg)`;
   }
@@ -143,14 +164,17 @@ function frame() {
 addEventListener("scroll", () => requestAnimationFrame(frame), { passive: true });
 addEventListener("resize", frame);
 
-/* Mobile showcase: tap the rail to switch scenes */
-rail.forEach((d, i) => d.parentElement.addEventListener("click", (e) => {
-  if (wide()) return;
-  const j = rail.indexOf(e.target); if (j < 0) return;
-  caps.forEach((c, k) => c.classList.toggle("on", k === j));
-  shots.forEach((s, k) => (s.style.opacity = k === j ? 1 : 0));
-  rail.forEach((r, k) => r.style.setProperty("--f", k === j ? 1 : 0));
-}, { once: i > 0 }));
+/* Showcase tabs: jump to a scene (desktop scrolls there; mobile swaps in place) */
+tabs.forEach((t, j) => t.addEventListener("click", () => {
+  if (wide() && !reduce) {
+    const top = showcase.getBoundingClientRect().top + scrollY;
+    scrollTo({ top: top + ((j + 0.05) / shots.length) * (showcase.offsetHeight - innerHeight), behavior: "smooth" });
+    return;
+  }
+  caps.forEach((c, k) => { c.classList.toggle("on", k === j); c.style.opacity = k === j ? 1 : 0; });
+  shots.forEach((s, k) => { s.style.opacity = k === j ? 1 : 0; s.style.clipPath = "none"; });
+  tabs.forEach((r, k) => { r.style.setProperty("--f", k === j ? 1 : 0); r.setAttribute("aria-selected", String(k === j)); });
+}));
 
 /* ---------- Bento illustrations play when seen ---------- */
 const cal = $(".ill-cal");
