@@ -13,12 +13,13 @@
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="theme-color" content="#061A2E" />
-  <meta name="color-scheme" content="dark" />
+  <meta name="color-scheme" content="light dark" />
   <link rel="icon" href="assets/icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }</script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -33,7 +34,9 @@
         <a href="#features">Features</a>
         <a href="#nerida">Nerida</a>
         <a href="#roadmap">Roadmap</a>
+        <a href="#changelog">Changelog</a>
         <a href="#faq">FAQ</a>
+        <a href="#about">About</a>
       </nav>
       <a class="btn btn-primary btn-sm os-dl nav-dl" href="https://github.com/MystiTheDev/oceanic/releases/latest">Download</a>
       <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="menu" aria-label="Open menu"><span></span><span></span></button>
@@ -48,10 +51,12 @@
       <a href="#nerida">Nerida</a>
       <a href="#privacy">Privacy</a>
       <a href="#roadmap">Roadmap</a>
+      <a href="#changelog">Changelog</a>
       <a href="#faq">FAQ</a>
+      <a href="#about">About</a>
     </nav>
     <a class="btn btn-primary btn-lg os-dl" href="https://github.com/MystiTheDev/oceanic/releases/latest">Download Oceanic</a>
-    <p class="menu-note">Free for Windows, macOS and Linux</p>
+    <p class="menu-note">Free for Windows, macOS, Linux and Android</p>
   </div>
 
   <main id="main">
@@ -72,25 +77,12 @@
             <a class="btn btn-light btn-lg os-dl" href="https://github.com/MystiTheDev/oceanic/releases/latest">Download Oceanic</a>
             <a class="btn btn-ghost btn-lg" href="#features">See what's inside</a>
           </div>
-          <p class="meta" id="meta">Free for Windows, macOS and Linux</p>
+          <p class="meta" id="meta">Free for Windows, macOS, Linux and Android</p>
         </div>
-        <!-- Pointers: a ring around a real part of the app, a connector line, and a label.
-             Coordinates are % of the home screenshot (x, y, width, height). -->
-        <div class="dive-callouts" aria-hidden="true">
-          <svg class="hl" viewBox="0 0 100 100">
-            <g class="pt"><rect x="0.6" y="43" width="13.4" height="17" rx="1.2" pathLength="1" /><line x1="14" y1="51.5" x2="17.5" y2="51.5" pathLength="1" /></g>
-            <g class="pt"><rect x="37.2" y="45" width="42.1" height="10" rx="1.4" pathLength="1" /><line x1="79.3" y1="50" x2="82.5" y2="50" pathLength="1" /></g>
-            <g class="pt"><rect x="92.4" y="4.4" width="7.2" height="4" rx="1.6" pathLength="1" /><line x1="92.4" y1="6.4" x2="89" y2="6.4" pathLength="1" /></g>
-            <g class="pt"><rect x="32" y="60.4" width="50.2" height="20.2" rx="1.2" pathLength="1" /><line x1="32" y1="70.5" x2="28.5" y2="70.5" pathLength="1" /></g>
-          </svg>
-          <div class="tag" style="left:17.5%;top:51.5%"><b>Your notes, organized</b><span>Pages, sub-pages and favorites</span></div>
-          <div class="tag" style="left:82.5%;top:50%"><b>Start anything in one click</b><span>New page, mind map or import</span></div>
-          <div class="tag tag-left" style="left:89%;top:6.4%"><b>Nerida, your study AI</b><span>Runs privately on your computer</span></div>
-          <div class="tag tag-left" style="left:28.5%;top:70.5%"><b>Pick up where you left off</b><span>Recently visited pages</span></div>
-        </div>
-        <figure class="shot dive-window">
-          <img src="assets/shots/home.jpg" alt="The Oceanic home screen with recent pages and quick actions" width="2880" height="1620" />
-        </figure>
+        <!-- 3D showcase: a closed laptop at a 3/4 angle turns to face you and opens, the screen zooms to fill the view, then holds.
+             Rendered with three.js (laptop3d.js). Once the screen fills the view, a sharp image takes over for the hold. -->
+        <canvas class="laptop3d" aria-hidden="true"></canvas>
+        <figure class="hold-shot"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/shots/laptop-dark.jpg" /><img src="assets/shots/laptop-light.jpg" alt="The Oceanic home screen with recent pages and quick actions" width="2880" height="1620" /></picture></figure>
       </div>
     </section>
 
@@ -109,7 +101,7 @@
           <p>Write in blocks and nest pages inside pages. Every page has a date, a status and tags, so it's always clear what's due and what's done.</p>
         </div>
         <figure class="shot shot-wide parallax">
-          <img src="assets/shots/notes.jpg" alt="A Cell Structure note with status, tags, headings and a checklist" width="2880" height="1620" loading="lazy" />
+          <picture><source media="(prefers-color-scheme: dark)" srcset="assets/shots/notes-dark.jpg" /><img src="assets/shots/notes-light.jpg" alt="A Cell Structure note with status, tags, headings and a checklist" width="2880" height="1620" loading="lazy" /></picture>
         </figure>
         <ul class="inline-points reveal">
           <li>Headings, lists, tables, math and images</li>
@@ -132,7 +124,7 @@
           </ul>
         </div>
         <figure class="shot shot-bleed parallax">
-          <img src="assets/shots/mindmap.jpg" alt="A mind map of The Cell with branches linked to notes" width="2880" height="1620" loading="lazy" />
+          <picture><source media="(prefers-color-scheme: dark)" srcset="assets/shots/mindmap-dark.jpg" /><img src="assets/shots/mindmap-light.jpg" alt="A mind map of The Cell with branches linked to notes" width="2880" height="1620" loading="lazy" /></picture>
         </figure>
       </div>
     </section>
@@ -144,17 +136,15 @@
             <h2 id="study-title">Revision, built in.</h2>
             <p>Write <code>question :: answer</code> in any note and it becomes a flashcard. Review with spaced repetition, test yourself, and see every exam and assignment on the calendar.</p>
             <div class="segmented" role="tablist" aria-label="Study tools">
-              <button role="tab" id="tab-0" aria-controls="study-panel" aria-selected="true" tabindex="0">Flashcards</button>
-              <button role="tab" id="tab-1" aria-controls="study-panel" aria-selected="false" tabindex="-1">Tests</button>
+              <button role="tab" id="tab-0" aria-controls="study-panel" aria-selected="true" tabindex="0">Dashboard</button>
               <button role="tab" id="tab-2" aria-controls="study-panel" aria-selected="false" tabindex="-1">Calendar</button>
             </div>
-            <p class="study-caption" id="study-caption" aria-live="polite">Review cards from any note, graded Again, Hard, Good or Easy.</p>
+            <p class="study-caption" id="study-caption" aria-live="polite">Tasks, tests and exam countdowns on one dashboard.</p>
           </div>
           <figure class="shot study-shot" id="study-panel" role="tabpanel" aria-labelledby="tab-0">
             <div class="stack">
-              <img class="on" src="assets/shots/flashcards.jpg" alt="Reviewing a flashcard: What does the nucleus do?" width="2880" height="1620" loading="lazy" />
-              <img src="assets/shots/test.jpg" alt="A multiple-choice test made from flashcards" width="2880" height="1620" loading="lazy" />
-              <img src="assets/shots/calendar.jpg" alt="The study calendar with exams and assignments" width="2880" height="1620" loading="lazy" />
+              <picture><source media="(prefers-color-scheme: dark)" srcset="assets/shots/dashboard-dark.jpg" /><img class="on" src="assets/shots/dashboard-light.jpg" alt="The study dashboard with tasks, tests and an exam countdown" width="2880" height="1620" loading="lazy" /></picture>
+              <picture><source media="(prefers-color-scheme: dark)" srcset="assets/shots/calendar-dark.jpg" /><img src="assets/shots/calendar-light.jpg" alt="The study calendar with exams and assignments" width="2880" height="1620" loading="lazy" /></picture>
             </div>
           </figure>
         </div>
@@ -171,21 +161,24 @@
         <div class="apps">
           <article class="app app-docs">
             <div class="app-text reveal">
-              <img src="assets/docs-icon.png" alt="" width="44" height="44" />
+              <span class="badge b-docs"><img src="assets/docs-icon.png" alt="" width="30" height="30" /></span>
               <h3>Docs</h3>
               <p>A focused writing space for essays and assignments. Opens and saves real <code>.docx</code> files, with templates for essays, reports and letters.</p>
             </div>
-            <figure class="shot parallax"><img src="assets/shots/docs.jpg" alt="An essay on photosynthesis open in Oceanic Docs" width="2880" height="1620" loading="lazy" /></figure>
+            <figure class="shot parallax"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/shots/docs-dark.jpg" /><img src="assets/shots/docs-light.jpg" alt="An essay on photosynthesis open in Oceanic Docs" width="2880" height="1620" loading="lazy" /></picture></figure>
           </article>
           <article class="app app-small reveal">
-            <img src="assets/sketch-icon.png" alt="" width="44" height="44" />
+            <span class="badge b-sketch"><img src="assets/sketch-icon.png" alt="" width="30" height="30" /></span>
             <h3>Sketch</h3>
             <p>Draw diagrams, graphs and doodles freely, then drop them into your notes.</p>
+            <!-- Screenshot slot: hidden until assets/shots/sketch.jpg exists. -->
+            <figure class="shot app-shot"><img src="assets/shots/sketch.jpg" alt="A diagram drawn in Oceanic Sketch" width="2880" height="1620" loading="lazy" onerror="this.parentNode.remove()" /></figure>
           </article>
           <article class="app app-small reveal">
-            <svg class="app-glyph" viewBox="0 0 44 44" width="44" height="44" aria-hidden="true"><rect x="9" y="5" width="26" height="34" rx="5" /><path d="M15 15h14M15 21h14M15 27h9" /><rect x="14" y="19" width="16" height="4" rx="1" class="hl-bar" /></svg>
+            <span class="badge b-pdf"><svg class="app-glyph" viewBox="0 0 44 44" width="30" height="30" aria-hidden="true"><rect x="9" y="5" width="26" height="34" rx="5" /><path d="M15 15h14M15 21h14M15 27h9" /><rect x="14" y="19" width="16" height="4" rx="1" class="hl-bar" /></svg></span>
             <h3>PDF reader</h3>
             <p>Highlight, underline and add sticky notes to PDFs, quote a page into a note, or ask Nerida about a passage.</p>
+            <figure class="shot app-shot"><img src="assets/shots/pdf.jpg" alt="A highlighted PDF open in Oceanic" width="2880" height="1620" loading="lazy" onerror="this.parentNode.remove()" /></figure>
           </article>
         </div>
       </div>
@@ -271,7 +264,7 @@
           <details><summary>Do my notes get sent anywhere?</summary><div class="ans"><p>Not unless you connect a cloud AI provider yourself. Otherwise everything stays in the folder you picked.</p></div></details>
           <details><summary>Does Nerida need the internet?</summary><div class="ans"><p>No. With a local model (llama.cpp or Ollama), Nerida works fully offline. Only cloud providers you choose to connect need the internet.</p></div></details>
           <details><summary>Where are my files?</summary><div class="ans"><p>In the notes folder you chose on first launch. They're yours, and you can export them anytime.</p></div></details>
-          <details><summary>Which systems does it run on?</summary><div class="ans"><p>Windows, macOS and Linux. A mobile version is planned.</p></div></details>
+          <details><summary>Which systems does it run on?</summary><div class="ans"><p>Windows, macOS and Linux, plus an Android app (APK). iOS isn't available yet.</p></div></details>
           <details><summary>Why does my computer warn me when I install it?</summary><div class="ans"><p>Oceanic isn't code-signed yet. On Windows, choose More info, then Run anyway. On macOS, right-click the app and choose Open.</p></div></details>
           <details><summary>Can I bring my notes from another app?</summary><div class="ans"><p>Yes. Import Markdown, Word, plain text, HTML or a Notion export.</p></div></details>
         </div>
@@ -288,14 +281,39 @@
           <a class="btn btn-primary btn-lg os-dl" href="https://github.com/MystiTheDev/oceanic/releases/latest">Download Oceanic</a>
         </div>
         <ul class="platforms" id="platforms">
-          <li class="platform" data-os="windows"><h3>Windows</h3><p>64-bit installer (.exe)</p><a href="https://github.com/MystiTheDev/oceanic/releases/latest">Download for Windows</a></li>
-          <li class="platform" data-os="mac"><h3>macOS</h3><p>Disk image (.dmg)</p><a href="https://github.com/MystiTheDev/oceanic/releases/latest">Download for macOS</a></li>
-          <li class="platform" data-os="linux"><h3>Linux</h3><p>AppImage, .deb or .rpm</p><a href="https://github.com/MystiTheDev/oceanic/releases/latest">Download for Linux</a><span class="alt" id="linux-alt"></span></li>
+          <li class="platform reveal" data-os="windows"><span class="os-tag">Desktop</span><h3>Windows</h3><p>64-bit installer (.exe)</p><a href="https://github.com/MystiTheDev/oceanic/releases/latest">Download for Windows</a></li>
+          <li class="platform reveal" data-os="mac"><span class="os-tag">Desktop</span><h3>macOS</h3><p>Disk image (.dmg)</p><a href="https://github.com/MystiTheDev/oceanic/releases/latest">Download for macOS</a></li>
+          <li class="platform reveal" data-os="linux"><span class="os-tag">Desktop</span><h3>Linux</h3><p>AppImage, .deb or .rpm</p><a href="https://github.com/MystiTheDev/oceanic/releases/latest">Download for Linux</a><span class="alt" id="linux-alt"></span></li>
+          <li class="platform reveal" data-os="android"><span class="os-tag">Mobile</span><h3>Android</h3><p>APK for arm64 phones</p><a href="https://github.com/MystiTheDev/oceanic/releases">Download for Android</a></li>
         </ul>
-        <p class="dl-note">Oceanic isn't code-signed yet, so your system may warn you the first time. <a href="https://github.com/MystiTheDev/oceanic/releases">See all releases</a>.</p>
-        <div class="log-wrap">
-          <h3 class="log-title">Recent releases</h3>
-          <div class="log" id="log"><p class="muted">Loading recent releases…</p></div>
+        <p class="dl-note">Oceanic isn't code-signed yet, so your system may warn you the first time. On Android, allow installs from your browser. <a href="https://github.com/MystiTheDev/oceanic/releases">See all releases</a>.</p>
+      </div>
+    </section>
+
+    <!-- Changelog -->
+    <section class="changelog" id="changelog" aria-labelledby="log-title">
+      <div class="container">
+        <div class="feature-head reveal">
+          <h2 id="log-title">Changelog</h2>
+          <p>What changed in recent releases. Full notes live on GitHub.</p>
+        </div>
+        <div class="log" id="log"><p class="muted">Loading recent releases…</p></div>
+        <p class="suggest" style="margin-top:28px"><a href="https://github.com/MystiTheDev/oceanic/releases">All releases on GitHub</a></p>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="about" id="about" aria-labelledby="about-title">
+      <div class="container about-grid">
+        <div class="about-copy reveal">
+          <h2 id="about-title">Made by one developer.</h2>
+          <p>Oceanic is built and maintained by MystiTheDev, an independent developer making the study app they wanted to use: fast, private and free. Feedback shapes what gets built next.</p>
+        </div>
+        <div class="about-cards reveal">
+          <a class="about-card" href="https://github.com/MystiTheDev"><b>GitHub</b><span>@MystiTheDev</span></a>
+          <a class="about-card" href="mailto:mysticlelive@gmail.com"><b>Email</b><span>mysticlelive@gmail.com</span></a>
+          <a class="about-card" href="https://github.com/MystiTheDev/oceanic/issues"><b>Feedback &amp; bugs</b><span>Open an issue on GitHub</span></a>
+          <div class="about-card"><b>Discord</b><span>Community server</span><span class="soon">Coming soon</span></div>
         </div>
       </div>
     </section>
@@ -309,6 +327,7 @@
       </div>
       <nav aria-label="Product"><h4>Product</h4><a href="#features">Features</a><a href="#nerida">Nerida</a><a href="#roadmap">Roadmap</a><a href="#download">Download</a></nav>
       <nav aria-label="Project"><h4>Project</h4><a href="https://github.com/MystiTheDev/oceanic">Source code</a><a href="https://github.com/MystiTheDev/oceanic/releases">Releases</a><a href="https://github.com/MystiTheDev/oceanic/issues">Report a bug</a></nav>
+      <nav aria-label="Contact"><h4>Contact</h4><a href="#about">About</a><a href="mailto:mysticlelive@gmail.com">Email</a><a href="https://github.com/MystiTheDev">GitHub</a></nav>
     </div>
     <div class="container foot-base"><span>© 2026 MystiTheDev</span><a href="#top">Back to the surface</a></div>
   </footer>

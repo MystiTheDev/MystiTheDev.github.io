@@ -1,4 +1,5 @@
 import { animate, stagger, utils } from "https://cdn.jsdelivr.net/npm/animejs@4/+esm";
+import { createLaptop } from "./laptop3d.js";
 
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const REPO = "MystiTheDev/oceanic";
@@ -69,34 +70,26 @@ $("#orb").innerHTML = orbSvg();
 /* ---------- Hero dive and page depth ---------- */
 // Water colour while diving (hero) and the page's depth colour below it (midnight to abyss).
 const WATER = [[0, [27, 127, 168]], [0.35, [16, 92, 135]], [0.7, [11, 62, 98]], [1, [6, 26, 46]]];
-const PAGE = [[0, [6, 26, 46]], [0.55, [5, 20, 38]], [1, [2, 10, 20]]];
-const dive = $(".dive"), stage = $(".dive-stage"), copy = $(".dive-copy"), nav = $("#nav"), depthEl = $(".depth");
-const points = $$(".hl .pt").map((g) => ({ rect: $("rect", g), line: $("line", g) }));
-const tags = $$(".tag");
+const dive = $(".dive"), stage = $(".dive-stage"), copy = $(".dive-copy"), nav = $("#nav");
 const parallax = $$(".parallax");
-
-// Pointer rings: positions are % of the screenshot in the markup; redraw them in real pixels
-// so the stroke stays even and the draw-on (dash) animation stays solid.
-const hl = $(".hl");
-const pct = points.map(({ rect, line }) => ({
-  r: ["x", "y", "width", "height"].map((a) => +rect.getAttribute(a)),
-  l: ["x1", "y1", "x2", "y2"].map((a) => +line.getAttribute(a)),
-}));
-function sizePointers() {
-  const w = hl.clientWidth, h = hl.clientHeight;
-  if (!w) return;
-  hl.setAttribute("viewBox", `0 0 ${w} ${h}`);
-  points.forEach(({ rect, line }, i) => {
-    const [x, y, rw, rh] = pct[i].r, [x1, y1, x2, y2] = pct[i].l;
-    const set = (el, o) => Object.entries(o).forEach(([a, v]) => el.setAttribute(a, v));
-    set(rect, { x: x * w / 100, y: y * h / 100, width: rw * w / 100, height: rh * h / 100, rx: 8 });
-    set(line, { x1: x1 * w / 100, y1: y1 * h / 100, x2: x2 * w / 100, y2: y2 * h / 100 });
-  });
+// The 3D laptop. Reduced motion shows it open and still; no WebGL shows the flat screenshot.
+const holdShot = $(".hold-shot"), laptopCanvas = $(".laptop3d");
+// Layers outside the canvas follow the laptop's damped progress, so everything glides together.
+// 0-0.12: the headline lifts away. ~0.62: the 3D screen fills the view and the crisp image takes over.
+function heroFrame(t) {
+  if (reduce) return;
+  const lift = ease(clamp(t / 0.12));
+  copy.style.transform = `translateY(${-lift * 220}px)`;
+  copy.style.opacity = String(1 - lift);
+  // At the end of the zoom the laptop fades away, leaving only the app screenshot floating.
+  if (laptop) { const k = clamp((t - 0.56) / 0.08); holdShot.style.setProperty("--hold", String(k)); laptopCanvas.style.opacity = String(1 - k); }
 }
-if (reduce) {
-  points.forEach((g) => { g.rect.style.strokeDashoffset = 0; g.line.style.strokeDashoffset = 0; });
-  tags.forEach((t) => (t.style.opacity = 1));
-}
+let laptop = null;
+// The laptop screen follows the system theme, like the <picture> screenshots.
+const darkMQ = matchMedia("(prefers-color-scheme: dark)");
+const homeShot = () => `assets/shots/laptop-${darkMQ.matches ? "dark" : "light"}.jpg`;
+try { laptop = createLaptop($(".laptop3d"), homeShot(), heroFrame); darkMQ.addEventListener("change", () => laptop.setScreen(homeShot())); } catch { holdShot.style.setProperty("--hold", "1"); }
+if (reduce && laptop) laptop.setProgress(0.42, true);
 
 // Ambient motes in the hero.
 const motes = $(".motes"), moteList = [];
@@ -118,31 +111,13 @@ function onScroll() {
   stage.style.setProperty("--ray-op", String(0.9 * clamp(1 - t * 1.5)));
   stage.style.setProperty("--handoff", String(clamp((t - 0.8) / 0.2)));
 
-  // Below the hero, the whole page keeps getting deeper.
-  const rest = document.documentElement.scrollHeight - innerHeight - dive.offsetHeight;
-  const d = rest > 0 ? clamp((scrollY - dive.offsetHeight) / rest) : 0;
-  depthEl.style.setProperty("--depth-color", rgb(lerpRGB(PAGE, d)));
-  depthEl.style.setProperty("--glow-a", String(0.1 * (1 - d)));
-  depthEl.style.setProperty("--glow-b", String(0.12 * (1 - d * 0.7)));
+  // Below the hero the page is light, so the nav switches to light glass.
+  nav.classList.toggle("light", scrollY > dive.offsetHeight - innerHeight * 0.9);
 
   if (!reduce) {
-    const lift = ease(clamp((t - 0.2) / 0.45));
-    copy.style.transform = `translateY(${-lift * 140}px)`;
-    copy.style.opacity = String(1 - lift);
-    const rise = ease(clamp(t / 0.6));
-    stage.style.setProperty("--win-off", `${(1 - rise) * innerHeight * 0.62}px`);
-    stage.style.setProperty("--win-s", String(0.92 + rise * 0.08));
-    // Each pointer draws in turn (ring, connector, label), tied to scroll so it reverses going up.
-    points.forEach((g, i) => {
-      const k = clamp((t - (0.62 + i * 0.075)) / 0.07);
-      const ring = ease(clamp(k / 0.5)), line = ease(clamp((k - 0.45) / 0.25)), lab = ease(clamp((k - 0.65) / 0.35));
-      g.rect.style.strokeDashoffset = String(1 - ring);
-      g.rect.style.fill = `rgba(142, 230, 242, ${0.07 * ring})`;
-      g.line.style.strokeDashoffset = String(1 - line);
-      const tag = tags[i], dir = tag.classList.contains("tag-left") ? 1 : -1;
-      tag.style.opacity = String(lab);
-      tag.style.transform = `translateX(${dir * (1 - lab) * 14}px)`;
-    });
+    // Phases live in laptop3d.js; the laptop eases toward t and calls heroFrame each frame.
+    // 0.62-1 is the hold (about one screen), then the page moves on.
+    if (laptop) laptop.setProgress(t); else heroFrame(t);
     // Motes rise past the camera at different speeds, which reads as moving down.
     moteList.forEach((m) => (m.style.translate = `0 ${-t * 600 * m.dataset.k}px`));
     // Screenshots drift slightly slower than the page.
@@ -161,8 +136,7 @@ addEventListener("scroll", () => {
   ticking = true;
   requestAnimationFrame(() => { onScroll(); ticking = false; });
 }, { passive: true });
-addEventListener("resize", () => { sizePointers(); onScroll(); });
-sizePointers();
+addEventListener("resize", () => { laptop?.resize(); onScroll(); });
 onScroll();
 
 /* ---------- Navigation: current section and the mobile menu ---------- */
@@ -217,8 +191,7 @@ if (!reduce) {
 /* ---------- Study tools: accessible tabs that rotate until you interact ---------- */
 const tabs = $$(".segmented [role=tab]"), imgs = $$(".stack img"), panel = $("#study-panel"), caption = $("#study-caption");
 const CAPTIONS = [
-  "Review cards from any note, graded Again, Hard, Good or Easy.",
-  "Turn your flashcards into a multiple-choice test and see your score.",
+  "Tasks, tests and exam countdowns on one dashboard.",
   "See every exam and assignment, with a countdown on your dashboard.",
 ];
 let cur = 0, autoOn = !reduce, timer = null;
@@ -320,13 +293,15 @@ new IntersectionObserver(async ([e], obs) => {
 const OS = (() => {
   const ua = navigator.userAgent.toLowerCase();
   const p = (navigator.userAgentData?.platform || navigator.platform || ua).toLowerCase();
-  if (/android|iphone|ipad/.test(ua)) return "mobile";
+  if (/android/.test(ua)) return "android";
+  if (/iphone|ipad/.test(ua)) return "mobile";
   if (p.includes("win")) return "windows";
   if (p.includes("mac")) return "mac";
   if (p.includes("linux")) return "linux";
   return "other";
 })();
-const OS_FILES = { windows: { label: "Windows", re: /-setup\.exe$/ }, mac: { label: "macOS", re: /\.dmg$/ }, linux: { label: "Linux", re: /\.AppImage$/ } };
+const OS_FILES = { windows: { label: "Windows", re: /-setup\.exe$/ }, mac: { label: "macOS", re: /\.dmg$/ }, linux: { label: "Linux", re: /\.AppImage$/ }, android: { label: "Android", re: /\.apk$/ } };
+// Desktop builds come from the latest v* release; the APK ships in its own android-v* release.
 function pickDownload(assets) {
   const find = (re) => assets.find((a) => re.test(a.name));
   const mine = OS_FILES[OS], asset = mine && find(mine.re);
@@ -345,17 +320,19 @@ function pickDownload(assets) {
 $$(".platform").forEach((li) => li.classList.toggle("mine", li.dataset.os === OS));
 
 /* ---------- Releases ---------- */
-fetch(`https://api.github.com/repos/${REPO}/releases?per_page=3`)
+fetch(`https://api.github.com/repos/${REPO}/releases?per_page=20`)
   .then((r) => (r.ok ? r.json() : Promise.reject()))
-  .then((rels) => {
+  .then((all) => {
+    const rels = all.filter((r) => !r.draft && !/^android-/.test(r.tag_name)).slice(0, 5);
     if (!rels.length) throw 0;
-    pickDownload(rels[0].assets || []);
-    $("#meta").textContent = `Free for Windows, macOS and Linux. Latest version ${rels[0].tag_name}.`;
-    $("#log").innerHTML = rels.map((r) => {
-      const items = (r.body || "").split("\n").filter((l) => /^\s*[-*]\s/.test(l)).slice(0, 3)
+    const apk = all.flatMap((r) => r.assets || []).find((a) => /\.apk$/.test(a.name));
+    pickDownload([...(rels[0].assets || []), ...(apk ? [apk] : [])]);
+    $("#meta").textContent = `Free for Windows, macOS, Linux and Android. Latest version ${rels[0].tag_name}.`;
+    $("#log").innerHTML = rels.map((r, i) => {
+      const items = (r.body || "").split("\n").filter((l) => /^\s*[-*]\s/.test(l)).slice(0, 5)
         .map((l) => `<li>${esc(l.replace(/^\s*[-*]\s+/, "").replace(/\*\*/g, "").replace(/^\p{Extended_Pictographic}️?\s*/u, ""))}</li>`).join("");
       const date = new Date(r.published_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
-      return `<article class="release"><div class="release-head"><h4><a href="${esc(r.html_url)}">${esc(r.tag_name)}</a></h4><time datetime="${esc(r.published_at)}">${esc(date)}</time></div><ul>${items}</ul></article>`;
+      return `<article class="release"><div class="release-head"><h4><a href="${esc(r.html_url)}">${esc(r.tag_name)}</a></h4><time datetime="${esc(r.published_at)}">${esc(date)}</time>${i ? "" : '<span class="latest">Latest</span>'}</div><ul>${items || "<li>See the full notes on GitHub.</li>"}</ul></article>`;
     }).join("");
   })
   .catch(() => { $("#log").innerHTML = `<p class="muted">Release notes didn't load. See them on <a href="https://github.com/${REPO}/releases">GitHub</a>.</p>`; });
